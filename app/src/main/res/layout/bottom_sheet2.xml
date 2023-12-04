@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:id="@+id/bottom_sheet_container2"
+    android:background="@drawable/bottom_sheet_background"
+    >
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Write something"
+        android:textSize="20sp"
+        android:fontFamily="@font/readex_light"
+        android:layout_gravity="center"
+        android:textColor="@color/darkBlue"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="20dp"
+        />
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:hint="Type here..."
+        android:textColor="@color/darkBlue"
+        android:textSize="17sp"
+        android:gravity="start"
+        android:id="@+id/edit"
+        android:background="@drawable/shape_selected"
+        android:padding="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginLeft="8dp"
+        android:fontFamily="@font/readex_light"
+        />
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/done"
+            android:text="DONE"
+            android:backgroundTint="@color/darkBlue"
+            android:layout_gravity="center"
+            android:fontFamily="@font/readex_light"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="250dp"
+            />
+</LinearLayout>

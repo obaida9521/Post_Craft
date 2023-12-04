@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    >
+    <group
+        android:id="@+id/g1"
+        >
+        <item
+            android:id="@+id/profile"
+            android:icon="@drawable/user"
+            android:title="Profile"
+            />
+        <item
+            android:id="@+id/favourite"
+            android:icon="@drawable/favorite_24"
+            android:title="Favourite"
+            />
+        <item
+            android:id="@+id/rating"
+            android:icon="@drawable/star"
+            android:title="Rate us"
+            />
+        <item
+            android:id="@+id/settings"
+            android:icon="@drawable/setting"
+            android:title="Settings"
+            />
+    </group>
+
+    <group
+        android:id="@+id/g2">
+        <item
+            android:id="@+id/privacy"
+            android:icon="@drawable/privacy"
+            android:title="Privacy policy"
+            />
+        <item
+            android:id="@+id/about"
+            android:icon="@drawable/info"
+            android:title="About us"
+            />
+        <item
+            android:id="@+id/logout"
+            android:icon="@drawable/logout"
+            android:title="Sign out"
+            />
+    </group>
+
+
+</menu>

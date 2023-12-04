@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".fragments.RecentWallpaperCategory">
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/recyclerRecentVideoCat"
+        android:visibility="gone"
+        />
+
+    <com.facebook.shimmer.ShimmerFrameLayout
+        android:id="@+id/effect"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_centerInParent="true">
+
+        <include layout="@layout/recent_wallpaper_shimmer" />
+    </com.facebook.shimmer.ShimmerFrameLayout>
+    <RelativeLayout
+        android:id="@+id/retryLay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:clickable="true"
+        android:foreground="?attr/selectableItemBackground"
+        >
+        <ImageView
+            android:id="@+id/retry"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/undo"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            app:tint="@color/darkBlue"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Try again"
+            android:layout_below="@+id/retry"
+            android:layout_centerHorizontal="true"
+            android:textSize="15sp"
+            android:fontFamily="@font/readex_light"
+            />
+    </RelativeLayout>
+
+</RelativeLayout>

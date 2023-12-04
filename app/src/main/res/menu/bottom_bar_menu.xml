@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/home"
+        android:icon="@drawable/homes"
+        android:title="HOME"
+        />
+    <item
+        android:id="@+id/post"
+        android:icon="@drawable/post"
+        android:title="STATUS"
+        />
+    <item
+        android:id="@+id/profilePic"
+        android:icon="@drawable/profile"
+        android:title="PIC"
+        app:tint="@color/black"
+        />
+    <item
+        android:id="@+id/video"
+        android:icon="@drawable/background"
+        android:title="WALLPAPER"
+        />
+
+
+</menu>
