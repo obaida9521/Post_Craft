@@ -131,6 +131,7 @@ public class AdapterAllProfilePic extends RecyclerView.Adapter {
             Intent intent = new Intent(context, ShowImage.class);
             intent.putExtra("image",""+itemAllProfilePic.getImage());
             intent.putExtra("title",""+itemAllProfilePic.getTitle());
+            intent.putExtra("type",false);
             context.startActivity(intent);
         });
 

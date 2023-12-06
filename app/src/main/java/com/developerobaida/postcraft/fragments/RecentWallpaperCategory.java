@@ -32,6 +32,9 @@ public class RecentWallpaperCategory extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
+        if (container!=null){
+            container.removeAllViews();
+        }
         View v = inflater.inflate(R.layout.fragment_recent_wallpaper_category, container, false);
         recyclerRecentVideoCat = v.findViewById(R.id.recyclerRecentVideoCat);
         effect = v.findViewById(R.id.effect);

@@ -5,7 +5,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.app.WallpaperManager;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Intent;
 import android.content.res.ColorStateList;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
@@ -53,13 +55,17 @@ public class ShowImage extends AppCompatActivity {
         setWallpaper = findViewById(R.id.setWallpaper);
         pr = findViewById(R.id.pr);
         tt = findViewById(R.id.tt);
-
-
+        pr.getIndeterminateDrawable().setTint(Color.parseColor("#CDDFFF"));
 
 
         Bundle bundle = getIntent().getExtras();
         String img = bundle.getString("image");
         String sTitle = bundle.getString("title");
+        boolean isVisible = bundle.getBoolean("type");
+
+        if (isVisible) setWallpaper.setVisibility(View.VISIBLE);
+        else setWallpaper.setVisibility(View.GONE);
+
 
         Picasso.get().load(img).into(image);
         title.setSelected(true);
@@ -79,7 +85,7 @@ public class ShowImage extends AppCompatActivity {
         });
 
         back.setOnClickListener(v -> {
-            super.onBackPressed();
+           onBackPressed();
             finish();
         });
     }
@@ -110,8 +116,7 @@ public class ShowImage extends AppCompatActivity {
 
         @Override
         protected Boolean doInBackground(Void... params) {
-            setWallpaper.setEnabled(false);
-            WallpaperManager wallpaperManager = WallpaperManager.getInstance(getApplicationContext());
+            WallpaperManager wallpaperManager = WallpaperManager.getInstance(ShowImage.this);
             Bitmap bitmap = ((BitmapDrawable) image.getDrawable()).getBitmap();
             try {
 
@@ -126,12 +131,12 @@ public class ShowImage extends AppCompatActivity {
         @Override
         protected void onPostExecute(Boolean success) {
             if (success) {
-                setWallpaper.setEnabled(true);
+
                 tt.setVisibility(View.VISIBLE);
                 pr.setVisibility(View.GONE);
                 Toast.makeText(ShowImage.this, "Wallpaper set successfully", Toast.LENGTH_SHORT).show();
             } else {
-                setWallpaper.setEnabled(true);
+
                 tt.setVisibility(View.VISIBLE);
                 pr.setVisibility(View.GONE);
                 Toast.makeText(ShowImage.this, "Failed to set wallpaper", Toast.LENGTH_SHORT).show();

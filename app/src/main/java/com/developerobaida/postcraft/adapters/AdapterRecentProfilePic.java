@@ -73,6 +73,7 @@ public class AdapterRecentProfilePic extends RecyclerView.Adapter<AdapterRecentP
             Intent intent = new Intent(context, ShowImage.class);
             intent.putExtra("image",""+recent.getImage());
             intent.putExtra("title",""+recent.getTitle());
+            intent.putExtra("type",false);
             context.startActivity(intent);
         });
         holder.share.setOnClickListener(v -> {

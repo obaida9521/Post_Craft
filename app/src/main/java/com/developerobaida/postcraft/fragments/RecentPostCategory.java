@@ -33,6 +33,9 @@ public class RecentPostCategory extends Fragment {
     JsonArrayRequest jsonArrayRequest;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        if (container!=null){
+            container.removeAllViews();
+        }
         View v =  inflater.inflate(R.layout.fragment_recent_post_category, container, false);
         recyclerRecentPostCat = v.findViewById(R.id.recyclerRecentPostCat);
         effect = v.findViewById(R.id.effect);

@@ -88,6 +88,7 @@ public class AdapterAllWallpaper extends RecyclerView.Adapter{
             Intent intent = new Intent(context, ShowImage.class);
             intent.putExtra("image",""+allWallpaper.getWallpaper());
             intent.putExtra("title",""+allWallpaper.getTitle());
+            intent.putExtra("type",true);
             context.startActivity(intent);
         });
     }

@@ -8,12 +8,17 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.View;
 import android.view.Window;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,20 +31,27 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Picasso;
 
-public class UserProfile extends AppCompatActivity {
+import java.io.File;
+import java.io.IOException;
 
+public class UserProfile extends AppCompatActivity {
     ImageView profile_pic,pick,back;
     TextView userName,userMail,title;
     LinearLayout logout;
     DatabaseReference reference;
     FirebaseUser firebaseUser;
+    StorageReference storageRef;
+    ProgressBar pr;
     private static final String USERS = "users";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_profile);
+
 
         profile_pic = findViewById(R.id.profile_pic);
         pick = findViewById(R.id.pick);
@@ -48,6 +60,8 @@ public class UserProfile extends AppCompatActivity {
         title = findViewById(R.id.title);
         logout = findViewById(R.id.logout);
         back = findViewById(R.id.back);
+        pr = findViewById(R.id.pr);
+        pr.getIndeterminateDrawable().setTint(Color.parseColor("#F44336"));
         if (Build.VERSION.SDK_INT>=21){Window window = getWindow();window.setStatusBarColor(this.getColor(R.color.white));}
         loadUserDetails();
 
@@ -81,14 +95,14 @@ public class UserProfile extends AppCompatActivity {
                         name = user.getDisplayName();
                         gmail = user.getEmail();
                         mobile = user.getPhoneNumber();
-                        image = user.getPic();
+                        image = user.getImageUrl();
 
                         userName.setText(name);
                         userMail.setText(gmail);
                         title.setText(name+"'s profile");
 
-                        if (user.getPic()!=null) Picasso.get().load(image).into(profile_pic);
-                        else profile_pic.setImageResource(R.drawable.man);
+                        if (user.getImageUrl()!=null) Picasso.get().load(image).into(profile_pic);
+                        else profile_pic.setImageResource(R.drawable.no_img);
                     }
                 }
                 @Override
@@ -97,7 +111,7 @@ public class UserProfile extends AppCompatActivity {
         }else {
             userName.setText("User");
             userMail.setText("Mail");
-            profile_pic.setImageResource(R.drawable.profile);
+            profile_pic.setImageResource(R.drawable.no_img);
 
         }
     }
@@ -105,9 +119,35 @@ public class UserProfile extends AppCompatActivity {
         @Override
         public void onActivityResult(Uri o) {
             if (o!=null) {
+                pr.setVisibility(View.VISIBLE);
                 Picasso.get().load(o).into(profile_pic);
+                uploadImageToFirebase(o);
 
             }else Toast.makeText(UserProfile.this, "No image selected", Toast.LENGTH_SHORT).show();
         }
     });
+    private void uploadImageToFirebase(Uri imageUri) {
+        pr.setVisibility(View.VISIBLE);
+
+        String uid = firebaseUser.getUid();
+        storageRef = FirebaseStorage.getInstance().getReference().child("profile_images").child(uid + ".jpg");
+
+        storageRef.putFile(imageUri).addOnSuccessListener(taskSnapshot -> {
+                    storageRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                        String imageUrl = uri.toString();
+
+                        reference = FirebaseDatabase.getInstance().getReference("users").child(uid);
+                        reference.child("imageUrl").setValue(imageUrl);
+                        Toast.makeText(UserProfile.this, "Image uploaded.", Toast.LENGTH_SHORT).show();
+
+                        loadUserDetails();
+                        pr.setVisibility(View.GONE);
+                    });
+                }).addOnFailureListener(e -> {
+                    pr.setVisibility(View.GONE);
+                    Toast.makeText(UserProfile.this, "Failed to upload.", Toast.LENGTH_SHORT).show();
+                });
+    }
+
+
 }

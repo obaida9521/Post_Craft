@@ -2,7 +2,10 @@ package com.developerobaida.postcraft.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
@@ -53,32 +56,43 @@ public class SignIn extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
 
         buttonSignIn.setOnClickListener(v -> {
-            progressbar.setVisibility(View.VISIBLE);
-            buttonSignIn.setText("");
-            String email,password;
-            email = input_email.getText().toString();
-            password = input_password.getText().toString();
-            mAuth.signInWithEmailAndPassword(email, password)
-                    .addOnCompleteListener(task -> {
-                        if (task.isSuccessful()) {
-                            progressbar.setVisibility(View.GONE);
-                            buttonSignIn.setText("SIGN IN");
-                            Toast.makeText(SignIn.this,"sign in success",Toast.LENGTH_SHORT).show();
-                            Intent intent = new Intent(SignIn.this,MainActivity.class);
-                            startActivity(intent);
-                            finish();
-                        } else {
-                            progressbar.setVisibility(View.GONE);
-                            buttonSignIn.setText("SIGN IN");
-                            Toast.makeText(SignIn.this,"Failed to sign in\ninvalid mail or password",Toast.LENGTH_SHORT).show();
-                        }
-                    });
-
+            if (isNetworkAvailable()) checkAuth();
+            else Toast.makeText(SignIn.this,"No Internet",Toast.LENGTH_SHORT).show();
         });
         textCreateNewAccount.setOnClickListener(v -> {
             Intent intent = new Intent(SignIn.this,SignUp.class);
             startActivity(intent);
         });
 
+    }
+    private void checkAuth(){
+        progressbar.setVisibility(View.VISIBLE);
+        buttonSignIn.setText("");
+        String email,password;
+        email = input_email.getText().toString();
+        password = input_password.getText().toString();
+        mAuth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        progressbar.setVisibility(View.GONE);
+                        buttonSignIn.setText("SIGN IN");
+                        Toast.makeText(SignIn.this,"sign in success",Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(SignIn.this,MainActivity.class);
+                        startActivity(intent);
+                        finish();
+                    } else {
+                        progressbar.setVisibility(View.GONE);
+                        buttonSignIn.setText("SIGN IN");
+                        Toast.makeText(SignIn.this,"Failed to sign in\ninvalid mail or password",Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (connectivityManager != null) {
+            NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+            return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+        }
+        return false;
     }
 }

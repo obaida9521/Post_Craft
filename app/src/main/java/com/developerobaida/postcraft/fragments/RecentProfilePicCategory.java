@@ -33,6 +33,9 @@ public class RecentProfilePicCategory extends Fragment {
     JsonArrayRequest jsonArrayRequest;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
+        if (container!=null){
+            container.removeAllViews();
+        }
         View v =  inflater.inflate(R.layout.fragment_recent_profile_pic_category, container, false);
         recyclerRecentProfilePicCat = v.findViewById(R.id.recyclerRecentProfilePicCat);
         effect = v.findViewById(R.id.effect);
@@ -86,4 +89,5 @@ public class RecentProfilePicCategory extends Fragment {
             }
         });
     }
+
 }

@@ -5,18 +5,26 @@ public class User {
     private String phoneNumber;
     private String displayName;
     private String password;
-    private String pic;
+    private String imageUrl;
 
     // Required default constructor for Firebase
     public User() {
     }
 
-    public User(String email, String phoneNumber, String displayName, String password,String pic) {
+    public User(String email, String phoneNumber, String displayName, String password,String imageUrl) {
         this.email = email;
         this.phoneNumber = phoneNumber;
         this.displayName = displayName;
         this.password = password;
-        this.pic = pic;
+        this.imageUrl = imageUrl;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     // Getters and setters
@@ -50,13 +58,5 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public String getPic() {
-        return pic;
-    }
-
-    public void setPic(String pic) {
-        this.pic = pic;
     }
 }

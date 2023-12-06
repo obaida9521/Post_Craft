@@ -279,15 +279,15 @@ public class MainActivity extends AppCompatActivity {
                         name = user.getDisplayName();
                         gmail = user.getEmail();
                         mobile = user.getPhoneNumber();
-                        image = user.getPic();
+                        image = user.getImageUrl();
 
                         userName.setText(name);
                         userMail.setText(gmail);
                         userMail.setVisibility(View.VISIBLE);
                         signIn_header.setVisibility(View.GONE);
 
-                        if (user.getPic()!=null) Picasso.get().load(image).into(userImage);
-                        else userImage.setImageResource(R.drawable.man);
+                        if (user.getImageUrl()!=null) Picasso.get().load(image).into(userImage);
+                        else userImage.setImageResource(R.drawable.no_img);
                     }
                 }
                 @Override
@@ -296,7 +296,7 @@ public class MainActivity extends AppCompatActivity {
         }else {
             userName.setText("User");
             userMail.setText("Mail");
-            userImage.setImageResource(R.drawable.profile);
+            userImage.setImageResource(R.drawable.no_img);
 
             Menu menu = drawer.getMenu();
             MenuItem logoutItem = menu.findItem(R.id.logout);

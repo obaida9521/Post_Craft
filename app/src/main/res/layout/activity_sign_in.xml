@@ -8,7 +8,8 @@
     android:overScrollMode="never"
     android:scrollbars="none"
     android:padding="20dp"
-    tools:context=".activities.SignIn">
+    tools:context=".activities.SignIn"
+    android:background="@color/white">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -79,6 +80,7 @@
                 android:id="@+id/buttonSignIn"
                 android:text="SIGN IN"
                 android:textSize="15dp"
+                android:textColor="@color/white"
                 android:textStyle="bold"
                 app:cornerRadius="10dp"
                 android:backgroundTint="@color/darkBlue"

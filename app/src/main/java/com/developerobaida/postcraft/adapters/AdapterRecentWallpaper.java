@@ -73,6 +73,7 @@ public class AdapterRecentWallpaper extends RecyclerView.Adapter<AdapterRecentWa
             Intent intent = new Intent(context, ShowImage.class);
             intent.putExtra("image",""+recentWallpaper.getWallpaper());
             intent.putExtra("title",""+recentWallpaper.getTitle());
+            intent.putExtra("type",true);
             context.startActivity(intent);
         });
         holder.share.setOnClickListener(v -> {
