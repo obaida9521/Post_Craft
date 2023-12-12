@@ -73,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
     DatabaseReference reference;
     FirebaseUser firebaseUser;
     private static final String USERS = "users";
+    String userId;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -93,6 +94,14 @@ public class MainActivity extends AppCompatActivity {
         userMail = headerView.findViewById(R.id.userMail);
         userMail.setSelected(true);
         userName.setSelected(true);
+        userImage.setOnClickListener(v -> {
+            if (firebaseUser.getUid()!=null){
+                Intent intent = new Intent(this,UserProfile.class);
+                startActivity(intent);
+            }else{
+                Toast.makeText(this,"You don't have account",Toast.LENGTH_SHORT).show();
+            }
+        });
 
 
         signIn_header.setOnClickListener(v -> {
@@ -268,7 +277,7 @@ public class MainActivity extends AppCompatActivity {
             logoutItem.setVisible(true);
             profileItem.setVisible(true);
 
-            String userId = firebaseUser.getUid();
+            userId = firebaseUser.getUid();
             reference = FirebaseDatabase.getInstance().getReference(USERS);
             reference.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
                 String name,gmail,mobile,image;
@@ -286,8 +295,8 @@ public class MainActivity extends AppCompatActivity {
                         userMail.setVisibility(View.VISIBLE);
                         signIn_header.setVisibility(View.GONE);
 
-                        if (user.getImageUrl()!=null) Picasso.get().load(image).into(userImage);
-                        else userImage.setImageResource(R.drawable.no_img);
+                        if (user.getImageUrl()!=null) Picasso.get().load(user.getImageUrl()).into(userImage);
+                        else userImage.setImageResource(R.drawable.man);
                     }
                 }
                 @Override

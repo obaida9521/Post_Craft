@@ -14,7 +14,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.TypedValue;
@@ -25,6 +24,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -53,7 +53,7 @@ import java.util.Objects;
 
 public class EditPostActivity extends AppCompatActivity implements AdapterBackgroundImage.OnItemClickListener,AdapterFont.OnItemClickListener{
     TextView text,ts;
-    CardView text_size,text_color,text_style,text_font,save,share,background,text_shadow,text_edit;
+    CardView text_size,text_color,text_style,text_font,background,text_shadow,text_edit;
     SeekBar seekBar,shadow_r,shadow_v,shadow_h;
     RecyclerView recBackground,recFont;
     ImageView edit_image,back;
@@ -64,6 +64,7 @@ public class EditPostActivity extends AppCompatActivity implements AdapterBackgr
     AdapterFont adapterFont;
     Button shadow_c,done;
     LinearLayout laySeek;
+    RelativeLayout save,share;
     String hexColorShadow,dx,dy,radius;
     float dxe,dye,radiuse;
     EditText edit;
@@ -72,6 +73,8 @@ public class EditPostActivity extends AppCompatActivity implements AdapterBackgr
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_post);
+        Window window = getWindow();
+        window.setStatusBarColor(this.getColor(R.color.white));
         text = findViewById(R.id.text);
         text_color = findViewById(R.id.text_color);
         text_size = findViewById(R.id.text_size);
@@ -89,13 +92,11 @@ public class EditPostActivity extends AppCompatActivity implements AdapterBackgr
         text_shadow = findViewById(R.id.text_shadow);
         laySeek = findViewById(R.id.laySeek);
         text_edit = findViewById(R.id.text_edit);
-        if (Build.VERSION.SDK_INT>=21){
-            Window window = getWindow();
-            window.setStatusBarColor(this.getColor(R.color.white));
-        }
+
 
 
         Bundle bundle = getIntent().getExtras();
+        assert bundle != null;
         String status = bundle.getString("status");
         String backImage = bundle.getString("image");
         String font = bundle.getString("font");
@@ -119,21 +120,9 @@ public class EditPostActivity extends AppCompatActivity implements AdapterBackgr
         text.setShadowLayer(Float.parseFloat(radius),Float.parseFloat(dx),Float.parseFloat(dy), Color.parseColor(shadow));
 
 
-        text_edit.setOnClickListener(v -> {
-            final BottomSheetDialog bottomSheetDialog2 = new BottomSheetDialog(this,R.style.BottomSheetDialogTheme);
-            View bottomSheetView = LayoutInflater.from(this).inflate(R.layout.bottom_sheet2,(LinearLayout)findViewById(R.id.bottom_sheet_container2));
-            edit = bottomSheetView.findViewById(R.id.edit);
-            done = bottomSheetView.findViewById(R.id.done);
-
-            done.setOnClickListener(v1 -> {
-                String txt = edit.getText().toString();
-                text.setText(txt);
-                bottomSheetDialog2.dismiss();
-            });
-
-            bottomSheetDialog2.setContentView(bottomSheetView);
-            bottomSheetDialog2.show();
-        });
+        text_edit.setOnClickListener(v -> setText());
+        text_font.setOnClickListener(v -> setFont());
+        background.setOnClickListener(v -> getBackground());
 
 
         text_shadow.setOnClickListener(v -> {
@@ -146,46 +135,6 @@ public class EditPostActivity extends AppCompatActivity implements AdapterBackgr
                         openSheet();
                     }).setNegativeButton("cancel", (dialog, which) -> {}).build().show();
         });
-
-
-        text_font.setOnClickListener(v -> {
-            if (!isShowing2){
-                text_font.setBackgroundColor(Color.parseColor("#CDDFFF"));
-
-                if (adapterFont!=null){
-                    recFont.setVisibility(View.VISIBLE);
-                    isShowing2 = true;
-                    if (isVisible){
-                        text_size.setBackgroundColor(Color.parseColor("#FFFFFF"));
-                        laySeek.setVisibility(View.GONE);
-                        isVisible = false;
-                    }
-                }else {
-                    recFont.setVisibility(View.VISIBLE);
-                    fontList();
-                    adapterFont = new AdapterFont(list,EditPostActivity.this);
-                    adapterFont.setOnItemClickListener(this);
-                    adapterFont.notifyDataSetChanged();
-                    recFont.setLayoutManager(new LinearLayoutManager(EditPostActivity.this, LinearLayoutManager.HORIZONTAL, false));
-                    recFont.setAdapter(adapterFont);
-
-                    if (isVisible){
-                        text_size.setBackgroundColor(Color.parseColor("#FFFFFF"));
-                        laySeek.setVisibility(View.GONE);
-                        isVisible = false;
-                    }
-                    isShowing2 = true;
-                }
-
-            }else if (isShowing2){
-
-                text_font.setBackgroundColor(Color.parseColor("#FFFFFF"));
-                recFont.setVisibility(View.GONE);
-                isShowing2 = false;
-            }
-        });
-
-        background.setOnClickListener(v -> getBackground());
 
         text_style.setOnClickListener(v -> {
             if (!isBold){
@@ -504,5 +453,56 @@ public class EditPostActivity extends AppCompatActivity implements AdapterBackgr
         });
         bottomSheetDialog.setContentView(bottomSheetView);
         bottomSheetDialog.show();
+    }
+    private void setText(){
+        final BottomSheetDialog bottomSheetDialog2 = new BottomSheetDialog(this,R.style.BottomSheetDialogTheme);
+        View bottomSheetView = LayoutInflater.from(this).inflate(R.layout.bottom_sheet2,(LinearLayout)findViewById(R.id.bottom_sheet_container2));
+        edit = bottomSheetView.findViewById(R.id.edit);
+        done = bottomSheetView.findViewById(R.id.done);
+
+        done.setOnClickListener(v1 -> {
+            String txt = edit.getText().toString();
+            text.setText(txt);
+            bottomSheetDialog2.dismiss();
+        });
+
+        bottomSheetDialog2.setContentView(bottomSheetView);
+        bottomSheetDialog2.show();
+    }
+    private void setFont(){
+        if (!isShowing2){
+            text_font.setBackgroundColor(Color.parseColor("#CDDFFF"));
+
+            if (adapterFont!=null){
+                recFont.setVisibility(View.VISIBLE);
+                isShowing2 = true;
+                if (isVisible){
+                    text_size.setBackgroundColor(Color.parseColor("#FFFFFF"));
+                    laySeek.setVisibility(View.GONE);
+                    isVisible = false;
+                }
+            }else {
+                recFont.setVisibility(View.VISIBLE);
+                fontList();
+                adapterFont = new AdapterFont(list,EditPostActivity.this);
+                adapterFont.setOnItemClickListener(this);
+                adapterFont.notifyDataSetChanged();
+                recFont.setLayoutManager(new LinearLayoutManager(EditPostActivity.this, LinearLayoutManager.HORIZONTAL, false));
+                recFont.setAdapter(adapterFont);
+
+                if (isVisible){
+                    text_size.setBackgroundColor(Color.parseColor("#FFFFFF"));
+                    laySeek.setVisibility(View.GONE);
+                    isVisible = false;
+                }
+                isShowing2 = true;
+            }
+
+        }else if (isShowing2){
+
+            text_font.setBackgroundColor(Color.parseColor("#FFFFFF"));
+            recFont.setVisibility(View.GONE);
+            isShowing2 = false;
+        }
     }
 }

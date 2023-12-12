@@ -6,14 +6,15 @@ import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.View;
 import android.view.Window;
 import android.widget.ImageView;
@@ -35,8 +36,9 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Picasso;
 
-import java.io.File;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class UserProfile extends AppCompatActivity {
     ImageView profile_pic,pick,back;
@@ -47,6 +49,7 @@ public class UserProfile extends AppCompatActivity {
     StorageReference storageRef;
     ProgressBar pr;
     private static final String USERS = "users";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,8 +65,9 @@ public class UserProfile extends AppCompatActivity {
         back = findViewById(R.id.back);
         pr = findViewById(R.id.pr);
         pr.getIndeterminateDrawable().setTint(Color.parseColor("#F44336"));
-        if (Build.VERSION.SDK_INT>=21){Window window = getWindow();window.setStatusBarColor(this.getColor(R.color.white));}
+        Window window = getWindow();window.setStatusBarColor(this.getColor(R.color.white));
         loadUserDetails();
+
 
         pick.setOnClickListener(v -> launcher.launch(new PickVisualMediaRequest.Builder().setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE).build()));
 
@@ -81,13 +85,13 @@ public class UserProfile extends AppCompatActivity {
     }
     private void loadUserDetails(){
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-
         if (firebaseUser!=null){
 
-            String userId = firebaseUser.getUid();
             reference = FirebaseDatabase.getInstance().getReference(USERS);
+            String userId = firebaseUser.getUid();
             reference.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
-                String name,gmail,mobile,image;
+                String name,gmail,mobile;
+                String image ="";
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     User user = snapshot.getValue(User.class);
@@ -101,8 +105,8 @@ public class UserProfile extends AppCompatActivity {
                         userMail.setText(gmail);
                         title.setText(name+"'s profile");
 
-                        if (user.getImageUrl()!=null) Picasso.get().load(image).into(profile_pic);
-                        else profile_pic.setImageResource(R.drawable.no_img);
+                        if (user.getImageUrl()!=null) Picasso.get().load(user.getImageUrl()).into(profile_pic);
+                        else profile_pic.setImageResource(R.drawable.man);
                     }
                 }
                 @Override
@@ -114,6 +118,7 @@ public class UserProfile extends AppCompatActivity {
             profile_pic.setImageResource(R.drawable.no_img);
 
         }
+
     }
     ActivityResultLauncher<PickVisualMediaRequest> launcher = registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), new ActivityResultCallback<Uri>() {
         @Override
@@ -130,24 +135,37 @@ public class UserProfile extends AppCompatActivity {
         pr.setVisibility(View.VISIBLE);
 
         String uid = firebaseUser.getUid();
-        storageRef = FirebaseStorage.getInstance().getReference().child("profile_images").child(uid + ".jpg");
+        storageRef = FirebaseStorage.getInstance().getReference().child("profile_images").child(uid + ".webp");
 
-        storageRef.putFile(imageUri).addOnSuccessListener(taskSnapshot -> {
-                    storageRef.getDownloadUrl().addOnSuccessListener(uri -> {
-                        String imageUrl = uri.toString();
+        try {
+            Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
 
-                        reference = FirebaseDatabase.getInstance().getReference("users").child(uid);
-                        reference.child("imageUrl").setValue(imageUrl);
-                        Toast.makeText(UserProfile.this, "Image uploaded.", Toast.LENGTH_SHORT).show();
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.WEBP, 70, baos);
+            byte[] data = baos.toByteArray();
 
-                        loadUserDetails();
+            storageRef.putBytes(data)
+                    .addOnSuccessListener(taskSnapshot -> {
+                        storageRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                            String imageUrl = uri.toString();
+
+                            reference = FirebaseDatabase.getInstance().getReference("users").child(uid);
+                            reference.child("imageUrl").setValue(imageUrl);
+                            Toast.makeText(UserProfile.this, "Image uploaded.", Toast.LENGTH_SHORT).show();
+
+                            loadUserDetails();
+                            pr.setVisibility(View.GONE);
+                        });
+                    })
+                    .addOnFailureListener(e -> {
                         pr.setVisibility(View.GONE);
+                        Toast.makeText(UserProfile.this, "Failed to upload.", Toast.LENGTH_SHORT).show();
                     });
-                }).addOnFailureListener(e -> {
-                    pr.setVisibility(View.GONE);
-                    Toast.makeText(UserProfile.this, "Failed to upload.", Toast.LENGTH_SHORT).show();
-                });
+        } catch (IOException e) {
+            e.printStackTrace();
+            pr.setVisibility(View.GONE);
+            Toast.makeText(UserProfile.this, "Error loading the image.", Toast.LENGTH_SHORT).show();
+        }
     }
-
 
 }

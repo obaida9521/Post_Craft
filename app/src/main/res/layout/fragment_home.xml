@@ -25,6 +25,35 @@
                 android:paddingBottom="10dp"
                 android:layout_marginTop="10dp"
                 />
+            <LinearLayout
+                android:id="@+id/edit_post"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:background="@drawable/button_border"
+                android:padding="8dp"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:layout_marginTop="5dp"
+                android:clickable="true"
+                android:foreground="?attr/selectableItemBackground"
+                >
+                <ImageView
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:src="@drawable/edit_24"
+                    android:layout_marginEnd="5dp"
+                    app:tint="@color/darkBlue" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Create post"
+                    android:textSize="15sp"
+                    android:fontFamily="@font/readex_light"
+                    android:layout_marginEnd="8dp"
+                    android:textColor="@color/darkBlue"
+                    />
+            </LinearLayout>
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

@@ -1,5 +1,9 @@
 package com.developerobaida.postcraft.fragments;
 
+import android.content.Context;
+import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -22,6 +26,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.Volley;
 import com.developerobaida.postcraft.R;
+import com.developerobaida.postcraft.activities.EditPostActivity;
 import com.developerobaida.postcraft.activities.MainActivity;
 import com.developerobaida.postcraft.slider.SlideItem;
 import com.developerobaida.postcraft.slider.SliderAdapter;
@@ -34,7 +39,7 @@ import java.util.List;
 public class Home extends Fragment {
     int millis = 5000;
     ViewPager2 viewPager2;
-    LinearLayout seeStatus,seeVideo,seeProfilePic;
+    LinearLayout seeStatus,seeVideo,seeProfilePic,edit_post;
     final Handler handler = new Handler(Looper.getMainLooper());
     final Runnable updateRunnable = new Runnable() {
         @Override
@@ -43,7 +48,7 @@ public class Home extends Fragment {
             int itemCount = viewPager2.getAdapter().getItemCount();
             int nextItem = (currentItem + 1) % itemCount;
             viewPager2.setCurrentItem(nextItem, true);
-            handler.postDelayed(this, millis); // 10000 milliseconds = 10 seconds
+            handler.postDelayed(this, millis);
         }
     };
     @Override
@@ -56,9 +61,7 @@ public class Home extends Fragment {
         seeStatus = v.findViewById(R.id.seeStatus);
         seeVideo = v.findViewById(R.id.seeVideo);
         seeProfilePic = v.findViewById(R.id.seeProfilePic);
-
-
-
+        edit_post = v.findViewById(R.id.edit_post);
 
         FragmentManager manager = getActivity().getSupportFragmentManager();
         FragmentTransaction transaction = manager.beginTransaction();
@@ -72,6 +75,25 @@ public class Home extends Fragment {
         seeProfilePic.setOnClickListener(v1 -> {if (getActivity() instanceof MainActivity) ((MainActivity) getActivity()).changeTab(R.id.profilePic);});
 
 
+        edit_post.setOnClickListener(v1 -> {
+            if (isNetworkAvailable()){
+                Intent intent = new Intent(getContext(), EditPostActivity.class);
+                intent.putExtra("status","Write something..");
+                intent.putExtra("image","https://developerobaida.com/jamat/news_details/Images/273452639_1698425823.jpeg");
+                intent.putExtra("font","readex_light.ttf");
+                intent.putExtra("size","18");
+                intent.putExtra("color","#ffffff");
+                intent.putExtra("dx","0.0");
+                intent.putExtra("dy","0.0");
+                intent.putExtra("radius","0.0");
+                intent.putExtra("shadowColor","#ffffff");
+                startActivity(intent);
+            }else {
+                Toast.makeText(getContext(),"No Internet",Toast.LENGTH_SHORT).show();
+            }
+
+
+        });
 
         //==================================================================================================================================
         //==================================================================================================================================
@@ -116,4 +138,12 @@ public class Home extends Fragment {
         return v;
     }
 
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (connectivityManager != null) {
+            NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+            return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+        }
+        return false;
+    }
 }

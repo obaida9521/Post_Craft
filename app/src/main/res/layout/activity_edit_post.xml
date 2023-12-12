@@ -52,17 +52,16 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            android:layout_marginRight="10dp"
+            android:layout_marginRight="5dp"
             >
-            <androidx.cardview.widget.CardView
+            <RelativeLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/save"
-                android:layout_margin="5dp"
+                android:layout_margin="4dp"
                 android:clickable="true"
                 android:foreground="?attr/selectableItemBackground"
-                app:cardCornerRadius="10dp"
-                android:backgroundTint="@color/darkBlue"
+                android:background="@drawable/button_border"
                 >
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -72,33 +71,33 @@
                     android:layout_marginLeft="10dp"
                     android:layout_marginRight="10dp"
                     >
-                    <ImageView
-                        android:layout_width="30dp"
-                        android:layout_height="40dp"
-                        android:src="@drawable/save_24"
-                        app:tint="@color/selected" />
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textSize="15sp"
-                        android:textColor="@color/selected"
+                        android:textColor="@color/darkBlue"
                         android:textStyle="bold"
                         android:text="Save"
                         android:gravity="center"
                         android:fontFamily="@font/readex_light"
                         />
+                    <ImageView
+                        android:layout_width="30dp"
+                        android:layout_height="40dp"
+                        android:src="@drawable/download_24"
+                        app:tint="@color/darkBlue" />
                 </LinearLayout>
 
-            </androidx.cardview.widget.CardView>
-            <androidx.cardview.widget.CardView
+            </RelativeLayout>
+            <RelativeLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/share"
-                android:layout_margin="5dp"
+                android:layout_margin="4dp"
                 android:clickable="true"
                 android:foreground="?attr/selectableItemBackground"
-                app:cardCornerRadius="10dp"
-                android:backgroundTint="@color/darkBlue"
+                android:background="@drawable/button_border"
                 >
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -108,25 +107,27 @@
                     android:layout_marginLeft="10dp"
                     android:layout_marginRight="10dp"
                     >
-                    <ImageView
-                        android:layout_width="30dp"
-                        android:layout_height="40dp"
-                        android:src="@drawable/share"
-                        app:tint="@color/selected" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textSize="15sp"
-                        android:textColor="@color/selected"
+                        android:textColor="@color/darkBlue"
                         android:textStyle="bold"
                         android:text="Share"
                         android:fontFamily="@font/readex_light"
                         android:gravity="center"
-                        android:layout_marginLeft="10dp"
+                        android:layout_marginRight="5dp"
                         />
+                    <ImageView
+                        android:layout_width="30dp"
+                        android:layout_height="40dp"
+                        android:src="@drawable/share"
+                        android:padding="3dp"
+                        app:tint="@color/darkBlue" />
+
                 </LinearLayout>
 
-            </androidx.cardview.widget.CardView>
+            </RelativeLayout>
         </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>

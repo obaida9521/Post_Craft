@@ -40,14 +40,14 @@ public class SignUp extends AppCompatActivity {
     ProgressBar progressBar;
     TextView textSignIn;
     private FirebaseAuth mAuth;
-    StorageReference storageRef;
     User user;
     FirebaseUser firebaseUser;
     DatabaseReference usersRef;
-    String imageUrl,email,password,name,number;
+    String email,password,name,number,imageUrl;
     RadioGroup radioGroup;
     RadioButton radioButton;
-    int pic,gender;
+    int gender;
+
     @Override
     public void onStart() {
         super.onStart();
@@ -64,10 +64,9 @@ public class SignUp extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_up);
 
-        if (Build.VERSION.SDK_INT>=21){
             Window window = getWindow();
             window.setStatusBarColor(this.getColor(R.color.white));
-        }
+
         input_name = findViewById(R.id.input_name);
         input_email = findViewById(R.id.input_email);
         input_password = findViewById(R.id.input_password);
@@ -79,9 +78,7 @@ public class SignUp extends AppCompatActivity {
 
         progressBar.getIndeterminateDrawable().setTint(Color.parseColor("#FFFFFF"));
 
-
         mAuth = FirebaseAuth.getInstance();
-
 
         buttonSignUp.setOnClickListener(v -> {
             if (isNetworkAvailable()) authUser();
@@ -115,8 +112,7 @@ public class SignUp extends AppCompatActivity {
             return;
         }
 
-        if (gender==0) pic = R.drawable.man;
-        else if (gender==1)pic = R.drawable.woman;
+
 
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
@@ -126,25 +122,12 @@ public class SignUp extends AppCompatActivity {
                         firebaseUser = mAuth.getCurrentUser();
                         String uid = firebaseUser.getUid();
 
-                        storageRef = FirebaseStorage.getInstance().getReference().child("profile_images").child(uid + ".jpg");
 
-                        Bitmap bitmap = BitmapFactory.decodeResource(getResources(),pic);
+                        user = new User(email, number, name, password, imageUrl);
 
-                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-                        byte[] data = baos.toByteArray();
+                        usersRef = FirebaseDatabase.getInstance().getReference("users").child(uid);
+                        usersRef.setValue(user);
 
-                        storageRef.putBytes(data).addOnSuccessListener(taskSnapshot -> {
-                            storageRef.getDownloadUrl().addOnSuccessListener(uri -> {
-                                imageUrl = uri.toString();
-                                user = new User(email,number,name,password,imageUrl);
-                                user.setImageUrl(imageUrl);
-
-                                usersRef = FirebaseDatabase.getInstance().getReference("users").child(uid);
-                                usersRef.setValue(user);
-
-                            });
-                        }).addOnFailureListener(e -> Toast.makeText(SignUp.this, "Image upload failed.", Toast.LENGTH_SHORT).show());
 
                         input_email.setText("");
                         input_number.setText("");

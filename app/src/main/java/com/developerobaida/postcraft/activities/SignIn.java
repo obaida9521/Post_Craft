@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
@@ -52,6 +53,7 @@ public class SignIn extends AppCompatActivity {
         textCreateNewAccount = findViewById(R.id.textCreateNewAccount);
         progressbar = findViewById(R.id.progressbar);
         textPrivacy =findViewById(R.id.textPrivacy);
+        progressbar.getIndeterminateDrawable().setTint(Color.parseColor("#FFFFFF"));
 
         mAuth = FirebaseAuth.getInstance();
 
