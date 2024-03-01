@@ -6,6 +6,7 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -28,6 +29,7 @@ import androidx.annotation.NonNull;
 import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.RecyclerView;
 import com.developerobaida.postcraft.R;
+import com.developerobaida.postcraft.database.DatabaseHelper;
 import com.developerobaida.postcraft.model.ItemRecentPost;
 import com.squareup.picasso.Picasso;
 import java.io.File;
@@ -40,9 +42,17 @@ import java.util.Objects;
 public class AdapterRecentPost extends RecyclerView.Adapter<AdapterRecentPost.RecentView> {
     ArrayList<ItemRecentPost> arrayList;
     Context context;
-    public AdapterRecentPost(ArrayList<ItemRecentPost> arrayList, Context context) {
+    DatabaseHelper database;
+    int serverid;
+
+    public interface RecentPostFavClickListener {
+        void postFavClick(int position, boolean isFav);
+    }
+    private RecentPostFavClickListener favClickListener;
+    public AdapterRecentPost(ArrayList<ItemRecentPost> arrayList, Context context,RecentPostFavClickListener listener) {
         this.arrayList = arrayList;
         this.context = context;
+        this.favClickListener = listener;
     }
 
     @NonNull
@@ -67,24 +77,24 @@ public class AdapterRecentPost extends RecyclerView.Adapter<AdapterRecentPost.Re
             public void onAnimationRepeat(Animation animation) {}
         });
 
-        Picasso.get().load(recent.getImage()).into(holder.statusImage);
+        Picasso.get().load(recent.getImage()).placeholder(R.drawable.material_design_default).into(holder.statusImage);
         Typeface typeface = Typeface.createFromAsset(context.getAssets(), ""+recent.getFont());
         holder.statusText.setShadowLayer(Float.parseFloat(recent.getRadius()),Float.parseFloat(recent.getDx()),Float.parseFloat(recent.getDy()),Color.parseColor(recent.getShadowColor()));
         holder.statusText.setText(recent.getStatus());
-        int i = Integer.parseInt(recent.getSize());
-        i = i - 13;
-        holder.statusText.setTextSize(TypedValue.COMPLEX_UNIT_SP,Float.parseFloat(String.valueOf(i)));
+        int sizes = Integer.parseInt(recent.getSize());
+        double percentageToSubtract = 0.23;
+        double subtractedValue = sizes - (sizes * percentageToSubtract);
+        sizes = (int) subtractedValue;
+
+        holder.statusText.setTextSize(TypedValue.COMPLEX_UNIT_SP,Float.parseFloat(String.valueOf(sizes)));
         holder.statusText.setTextColor(Color.parseColor(recent.getColor()));
         holder.statusText.setTypeface(typeface);
 
         holder.copy.setOnClickListener(v -> {
             ClipData data = ClipData.newPlainText("Text",holder.statusText.getText().toString());
             manager.setPrimaryClip(data);
-
             Toast.makeText(context,"Copied to clipboard",Toast.LENGTH_SHORT).show();
         });
-
-
 
         holder.download.setOnClickListener(v -> {
             Bitmap combinedBitmap = createCombinedBitmap(holder.statusImage, holder.statusText);
@@ -95,6 +105,35 @@ public class AdapterRecentPost extends RecyclerView.Adapter<AdapterRecentPost.Re
             Bitmap combinedBitmap = createCombinedBitmap(holder.statusImage, holder.statusText);
             shareImageAndText(combinedBitmap);
         });
+
+        database = new DatabaseHelper(context);
+        Cursor cursor = database.getPost_fav();
+        while (cursor.moveToNext()){
+            serverid = cursor.getInt(11);
+            if (serverid == Integer.parseInt(recent.getId())) {
+                Log.d("id : ",recent.getId());
+                holder.favImg.setImageResource(R.drawable.favorite_24);
+                recent.setBookmarked(true);
+                break;
+            }
+        }
+
+        if (recent.getIsBookmarked()){
+
+            holder.fav.setOnClickListener(v -> {
+                holder.favImg.setImageResource(R.drawable.favorite_border_24);
+                recent.setBookmarked(false);
+                favClickListener.postFavClick(position,false);
+            });
+
+        }else {
+            holder.fav.setOnClickListener(v -> {
+                holder.favImg.setImageResource(R.drawable.favorite_24);
+                recent.setBookmarked(true);
+                Toast.makeText(context,"Added to favourite",Toast.LENGTH_SHORT).show();
+                favClickListener.postFavClick(position,true);
+            });
+        }
     }
 
     @Override
@@ -104,7 +143,7 @@ public class AdapterRecentPost extends RecyclerView.Adapter<AdapterRecentPost.Re
 
     public class RecentView extends RecyclerView.ViewHolder{
         TextView statusText;
-        ImageView statusImage;
+        ImageView statusImage,favImg;
         RelativeLayout copy;
         RelativeLayout fav,download,share;
         public RecentView(@NonNull View itemView) {
@@ -116,6 +155,7 @@ public class AdapterRecentPost extends RecyclerView.Adapter<AdapterRecentPost.Re
             download = itemView.findViewById(R.id.download);
             share = itemView.findViewById(R.id.share);
             copy = itemView.findViewById(R.id.copy);
+            favImg = itemView.findViewById(R.id.favImg);
         }
     }
 
@@ -193,9 +233,8 @@ public class AdapterRecentPost extends RecyclerView.Adapter<AdapterRecentPost.Re
                 values.put(MediaStore.Images.Media.IS_PENDING, 0);
                 resolver.update(imageUri, values, null, null);
                 Toast.makeText(context, "Image saved to gallery", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(context, "Error: Output stream is null", Toast.LENGTH_SHORT).show();
-            }
+            } else Toast.makeText(context, "Error: Output stream is null", Toast.LENGTH_SHORT).show();
+
         } catch (IOException e) {
             e.printStackTrace();
             Toast.makeText(context, "Error found. Image not saved", Toast.LENGTH_SHORT).show();

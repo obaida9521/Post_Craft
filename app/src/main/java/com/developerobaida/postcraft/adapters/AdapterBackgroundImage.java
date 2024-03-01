@@ -19,6 +19,12 @@ import java.util.ArrayList;
 public class AdapterBackgroundImage extends RecyclerView.Adapter<AdapterBackgroundImage.ImageViewHolder> {
     ArrayList<ItemImageBackground> arrayList;
     Context context;
+
+    public void setFilter(ArrayList<ItemImageBackground> newList) {
+        arrayList = new ArrayList<>();
+        arrayList.addAll(newList);
+        notifyDataSetChanged();
+    }
     public interface OnItemClickListener {void onItemClick(ItemImageBackground item);}
     private OnItemClickListener onItemClickListener;
     public void setOnItemClickListener(OnItemClickListener listener) {this.onItemClickListener = listener;}
@@ -64,7 +70,6 @@ public class AdapterBackgroundImage extends RecyclerView.Adapter<AdapterBackgrou
         }
         public void setSelected(boolean isSelected) {
             image.setSelected(isSelected);
-
             if (isSelected) itm.setBackgroundResource(R.drawable.shape_selected);
             else itm.setBackgroundResource(0);
         }

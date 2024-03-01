@@ -6,12 +6,14 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,6 +28,7 @@ import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.RecyclerView;
 import com.developerobaida.postcraft.R;
 import com.developerobaida.postcraft.activities.EditPostActivity;
+import com.developerobaida.postcraft.database.DatabaseHelper;
 import com.developerobaida.postcraft.model.ItemAllPost;
 import com.squareup.picasso.Picasso;
 import java.io.File;
@@ -38,7 +41,13 @@ import java.util.Objects;
 public class AdapterAllPost extends RecyclerView.Adapter{
     ArrayList<ItemAllPost> arrayList;
     Context context;
+    DatabaseHelper database;
+    int serverid;
 
+    public interface PostFavClickListener {
+        void postFavClick(int position, boolean isFav);
+    }
+    private PostFavClickListener favClickListener;
     //-----------------------------------
     public void setFilter(ArrayList<ItemAllPost> newList) {
         arrayList = new ArrayList<>();
@@ -46,13 +55,12 @@ public class AdapterAllPost extends RecyclerView.Adapter{
         notifyDataSetChanged();
     }
     //------------------------------------
-    public AdapterAllPost(ArrayList arrayList, Context context) {
-        if (arrayList == null) {
-            this.arrayList = new ArrayList<>();
-        } else {
-            this.arrayList = arrayList;
-        }
+    public AdapterAllPost(ArrayList arrayList, Context context, PostFavClickListener listener) {
+        if (arrayList == null) this.arrayList = new ArrayList<>();
+        else this.arrayList = arrayList;
+
         this.context = context;
+        this.favClickListener = listener;
     }
     @NonNull
     @Override
@@ -119,6 +127,36 @@ public class AdapterAllPost extends RecyclerView.Adapter{
             shareImageAndText(combinedBitmap);
         });
 
+        //===============================================================================================================
+        database = new DatabaseHelper(context);
+        Cursor cursor = database.getPost_fav();
+        while (cursor.moveToNext()){
+            serverid = cursor.getInt(11);
+            if (serverid == Integer.parseInt(itemAllPost.getId())) {
+                Log.d("id : ",itemAllPost.getId());
+                holder1.fav.setImageResource(R.drawable.favorite_24);
+                itemAllPost.setBookmarked(true);
+                break;
+            }
+        }
+
+        if (itemAllPost.getIsBookmarked()){
+
+            holder1.fav.setOnClickListener(v -> {
+                holder1.fav.setImageResource(R.drawable.favorite_border_24);
+                itemAllPost.setBookmarked(false);
+                favClickListener.postFavClick(position,false);
+            });
+
+        }else {
+            holder1.fav.setOnClickListener(v -> {
+                holder1.fav.setImageResource(R.drawable.favorite_24);
+                itemAllPost.setBookmarked(true);
+                Toast.makeText(context,"Added to favourite",Toast.LENGTH_SHORT).show();
+                favClickListener.postFavClick(position,true);
+            });
+        }
+        //===============================================================================================================
     }
 
     @Override

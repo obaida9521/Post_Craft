@@ -12,16 +12,15 @@
         android:title="STATUS"
         />
     <item
+        android:id="@+id/video"
+        android:icon="@drawable/background"
+        android:title="WALLPAPER"
+        />
+    <item
         android:id="@+id/profilePic"
         android:icon="@drawable/profile"
         android:title="PIC"
         app:tint="@color/black"
         />
-    <item
-        android:id="@+id/video"
-        android:icon="@drawable/background"
-        android:title="WALLPAPER"
-        />
-
 
 </menu>

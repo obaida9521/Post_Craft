@@ -60,22 +60,64 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 
-    <androidx.recyclerview.widget.RecyclerView
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/recPost"
+        android:id="@+id/swiperefresh"
         android:layout_below="@+id/rl"
-        android:visibility="gone"
-        />
-    <com.facebook.shimmer.ShimmerFrameLayout
-        android:layout_below="@+id/rl"
-        android:id="@+id/effect"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
         >
-        <include layout="@layout/all_post_shimmer"/>
-    </com.facebook.shimmer.ShimmerFrameLayout>
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            >
+            <androidx.recyclerview.widget.RecyclerView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/recPost"
+                android:visibility="gone"
+                />
+            <com.facebook.shimmer.ShimmerFrameLayout
+                android:id="@+id/effect"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                >
+                <include layout="@layout/all_post_shimmer"/>
+            </com.facebook.shimmer.ShimmerFrameLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+    <RelativeLayout
+        android:id="@+id/retryLay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:clickable="true"
+        android:foreground="?attr/selectableItemBackground"
+        >
+        <ImageView
+            android:id="@+id/retry"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:src="@drawable/undo"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            app:tint="@color/darkBlue"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Try again"
+            android:layout_below="@+id/retry"
+            android:layout_centerHorizontal="true"
+            android:textSize="15sp"
+            android:fontFamily="@font/readex_light"
+            />
+    </RelativeLayout>
+
+
 
 
 </RelativeLayout>

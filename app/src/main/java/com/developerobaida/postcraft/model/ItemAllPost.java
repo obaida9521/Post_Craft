@@ -2,10 +2,10 @@ package com.developerobaida.postcraft.model;
 
 public class ItemAllPost {
 
-    String status,image,font,category,color,size,dx,dy,radius,shadowColor;
+    String status,image,font,category,color,size,dx,dy,radius,shadowColor,id,type;
+    boolean isBookmarked;
 
-
-    public ItemAllPost(String status, String image, String font, String color,String size, String category,String dy,String dx,String radius,String shadowColor) {
+    public ItemAllPost(String status, String image, String font, String color,String size, String category,String dy,String dx,String radius,String shadowColor,String id,String type) {
         this.status = status;
         this.category = category;
         this.image = image;
@@ -16,6 +16,32 @@ public class ItemAllPost {
         this.dx = dx;
         this.radius = radius;
         this.shadowColor = shadowColor;
+        this.id = id;
+        this.type = type;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public boolean getIsBookmarked() {
+        return isBookmarked;
+    }
+
+    public void setBookmarked(boolean bookmarked) {
+        isBookmarked = bookmarked;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getDx() {

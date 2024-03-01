@@ -1,8 +1,21 @@
 package com.developerobaida.postcraft.model;
 
 public class ItemImageBackground {
-    String image;
+    String image,category;
     private boolean isSelected;
+
+    public ItemImageBackground(String image, String category) {
+        this.image = image;
+        this.category = category;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
 
     public boolean isSelected() {
         return isSelected;
@@ -10,9 +23,6 @@ public class ItemImageBackground {
 
     public void setSelected(boolean selected) {
         isSelected = selected;
-    }
-    public ItemImageBackground(String image) {
-        this.image = image;
     }
 
     public String getImage() {

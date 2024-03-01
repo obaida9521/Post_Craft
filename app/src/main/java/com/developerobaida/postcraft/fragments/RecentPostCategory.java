@@ -16,6 +16,7 @@ import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.Volley;
 import com.developerobaida.postcraft.R;
 import com.developerobaida.postcraft.adapters.AdapterRecentPost;
+import com.developerobaida.postcraft.database.DatabaseHelper;
 import com.developerobaida.postcraft.model.ItemRecentPost;
 import com.facebook.shimmer.ShimmerFrameLayout;
 
@@ -23,7 +24,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-public class RecentPostCategory extends Fragment {
+public class RecentPostCategory extends Fragment implements AdapterRecentPost.RecentPostFavClickListener{
 
     AdapterRecentPost adapterRecentPost;
     ArrayList<ItemRecentPost> arrayList = new ArrayList<>();
@@ -31,6 +32,7 @@ public class RecentPostCategory extends Fragment {
     ShimmerFrameLayout effect;
     RelativeLayout retryLay;
     JsonArrayRequest jsonArrayRequest;
+    DatabaseHelper database;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         if (container!=null){
@@ -40,9 +42,9 @@ public class RecentPostCategory extends Fragment {
         recyclerRecentPostCat = v.findViewById(R.id.recyclerRecentPostCat);
         effect = v.findViewById(R.id.effect);
         retryLay = v.findViewById(R.id.retryLay);
+        database = new DatabaseHelper(getContext());
         recyclerRecentPostCat.setHasFixedSize(true);
         getData();
-
 
         return v;
     }
@@ -55,6 +57,7 @@ public class RecentPostCategory extends Fragment {
                 for (int i=0; i<response.length();i++){
 
                     JSONObject jsonObject = response.getJSONObject(i);
+                    String id = jsonObject.getString("id");
                     String status = jsonObject.getString("status");
                     String image = jsonObject.getString("image");
                     String font = jsonObject.getString("font");
@@ -65,10 +68,11 @@ public class RecentPostCategory extends Fragment {
                     String dx = jsonObject.getString("h_shadow");
                     String radius = jsonObject.getString("r_shadow");
                     String shadowColor = jsonObject.getString("c_shadow");
+                    String type = jsonObject.getString("type");
 
-                    arrayList.add(new ItemRecentPost(""+status,""+image,""+font,""+color,""+size,""+category,""+dy,""+dx,""+radius,""+shadowColor));
+                    arrayList.add(new ItemRecentPost(""+status,""+image,""+font,""+color,""+size,""+category,""+dy,""+dx,""+radius,""+shadowColor,""+id,""+type));
                 }
-                adapterRecentPost = new AdapterRecentPost(arrayList, getContext());
+                adapterRecentPost = new AdapterRecentPost(arrayList, getContext(),this);
                 recyclerRecentPostCat.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
                 recyclerRecentPostCat.setAdapter(adapterRecentPost);
 
@@ -96,5 +100,18 @@ public class RecentPostCategory extends Fragment {
                 requestQueue.add(jsonArrayRequest);
             }
         });
+    }
+
+    @Override
+    public void postFavClick(int position, boolean isFav) {
+        if (position >= 0 && position < arrayList.size()) {
+            ItemRecentPost clickedItem = arrayList.get(position);
+            if (isFav)
+                database.addPost_fav(""+clickedItem.getStatus(),""+clickedItem.getType(),""+clickedItem.getImage(), ""+clickedItem.getFont(),
+                    ""+clickedItem.getColor(),""+clickedItem.getSize(),""+clickedItem.getDy(),""+clickedItem.getDx(),""+clickedItem.getRadius(),
+                    ""+clickedItem.getShadowColor(),""+clickedItem.getId());
+            else database.deletePost_fav(Integer.parseInt(clickedItem.getId()));
+
+        }
     }
 }

@@ -27,7 +27,6 @@ public class User {
         this.imageUrl = imageUrl;
     }
 
-    // Getters and setters
     public String getEmail() {
         return email;
     }

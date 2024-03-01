@@ -19,11 +19,6 @@
             android:icon="@drawable/star"
             android:title="Rate us"
             />
-        <item
-            android:id="@+id/settings"
-            android:icon="@drawable/setting"
-            android:title="Settings"
-            />
     </group>
 
     <group

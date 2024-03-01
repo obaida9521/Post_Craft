@@ -4,10 +4,12 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +26,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.developerobaida.postcraft.R;
 import com.developerobaida.postcraft.activities.ShowImage;
+import com.developerobaida.postcraft.database.DatabaseHelper;
 import com.developerobaida.postcraft.model.ItemRecentProfilePic;
 import com.squareup.picasso.Picasso;
 
@@ -37,10 +40,17 @@ import java.util.Objects;
 public class AdapterRecentProfilePic extends RecyclerView.Adapter<AdapterRecentProfilePic.RecentView>{
     ArrayList<ItemRecentProfilePic> arrayList;
     Context context;
+    DatabaseHelper database;
+    int serverid;
+    public interface RecentProfileFavClickListener {
+        void recentProfileFavClickListener(int position, boolean isFav);
+    }
+    private RecentProfileFavClickListener favClickListener;
 
-    public AdapterRecentProfilePic(ArrayList<ItemRecentProfilePic> arrayList, Context context) {
+    public AdapterRecentProfilePic(ArrayList<ItemRecentProfilePic> arrayList, Context context,RecentProfileFavClickListener listener) {
         this.arrayList = arrayList;
         this.context = context;
+        this.favClickListener = listener;
     }
 
     @NonNull
@@ -54,6 +64,18 @@ public class AdapterRecentProfilePic extends RecyclerView.Adapter<AdapterRecentP
     @Override
     public void onBindViewHolder(@NonNull RecentView holder, int position) {
         ItemRecentProfilePic recent = arrayList.get(position);
+
+        database = new DatabaseHelper(context);
+        Cursor cursor = database.getProfile_fav();
+        while (cursor.moveToNext()){
+            serverid = cursor.getInt(4);
+            if (serverid == Integer.parseInt(recent.getId())) {
+                Log.d("id : ",recent.getId());
+                holder.favImg.setImageResource(R.drawable.favorite_24);
+                recent.setBookmarked(true);
+                break;
+            }
+        }
         Animation animation = AnimationUtils.loadAnimation(context, R.anim.item_animation_from_bottom);
         holder.itemView.startAnimation(animation);
         animation.setAnimationListener(new Animation.AnimationListener() {
@@ -86,6 +108,23 @@ public class AdapterRecentProfilePic extends RecyclerView.Adapter<AdapterRecentP
             Bitmap bitmap = bitmapDrawable.getBitmap();
             saveImage(bitmap);
         });
+
+        if (recent.getIsBookmarked()){
+
+            holder.fav.setOnClickListener(v -> {
+                holder.favImg.setImageResource(R.drawable.favorite_border_24);
+                recent.setBookmarked(false);
+                favClickListener.recentProfileFavClickListener(position,false);
+            });
+
+        }else {
+            holder.fav.setOnClickListener(v -> {
+                holder.favImg.setImageResource(R.drawable.favorite_24);
+                recent.setBookmarked(true);
+                Toast.makeText(context,"Added to favourite",Toast.LENGTH_SHORT).show();
+                favClickListener.recentProfileFavClickListener(position,true);
+            });
+        }
     }
 
     @Override
@@ -95,7 +134,7 @@ public class AdapterRecentProfilePic extends RecyclerView.Adapter<AdapterRecentP
 
     public class RecentView extends RecyclerView.ViewHolder{
         RelativeLayout fav,download,share;
-        ImageView profilePic;
+        ImageView profilePic,favImg;
         TextView marquee;
         public RecentView(@NonNull View itemView) {
             super(itemView);
@@ -105,6 +144,7 @@ public class AdapterRecentProfilePic extends RecyclerView.Adapter<AdapterRecentP
             download = itemView.findViewById(R.id.download);
             profilePic = itemView.findViewById(R.id.profilePic);
             marquee = itemView.findViewById(R.id.marquee);
+            favImg = itemView.findViewById(R.id.favImg);
         }
     }
 

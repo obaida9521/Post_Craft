@@ -63,6 +63,7 @@
                 app:abb_tabs="@menu/bottom_bar_menu"
                 app:abb_badgeTextColor="@color/white"
                 android:elevation="8dp"
+                app:abb_textAppearance="@style/NavigationViewStyle"
                 />
         </RelativeLayout>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
@@ -80,5 +81,6 @@
         app:headerLayout="@layout/header"
         android:background="#A4000000"
         app:itemRippleColor="@color/selected"
+        android:outlineSpotShadowColor="@color/white"
         />
 </androidx.drawerlayout.widget.DrawerLayout>

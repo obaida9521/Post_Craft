@@ -4,6 +4,7 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
@@ -15,36 +16,17 @@ import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.core.content.FileProvider;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import com.android.volley.AuthFailureError;
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
 import com.developerobaida.postcraft.R;
 import com.developerobaida.postcraft.activities.ShowImage;
-import com.developerobaida.postcraft.activities.ViewBookmark;
-import com.developerobaida.postcraft.listeners.OnProfileItemClickListener;
-import com.developerobaida.postcraft.model.BookmarkItem;
+import com.developerobaida.postcraft.database.DatabaseHelper;
 import com.developerobaida.postcraft.model.ItemAllProfilePic;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ServerValue;
-import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
@@ -52,20 +34,19 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 
 public class AdapterAllProfilePic extends RecyclerView.Adapter {
-    private boolean isAdded = false;
     ArrayList<ItemAllProfilePic> arrayList;
     Context context;
-    FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-    String userId = currentUser != null ? currentUser.getUid() : "NULL";
-    DatabaseReference bookmarksRef;
     ItemAllProfilePic itemAllProfilePic;
-    OnProfileItemClickListener listener;
+    DatabaseHelper database;
+    int serverid;
 
+    public interface ProfileFavClickListener {
+        void profileFavClick(int position, boolean isFav);
+    }
+    private ProfileFavClickListener favClickListener;
     //-----------------------------------
     public void setFilter(ArrayList<ItemAllProfilePic> newList) {
         arrayList = new ArrayList<>();
@@ -74,17 +55,16 @@ public class AdapterAllProfilePic extends RecyclerView.Adapter {
     }
     //------------------------------------
 
-    public AdapterAllProfilePic(ArrayList<ItemAllProfilePic> arrayList, Context context, OnProfileItemClickListener listener) {
+    public AdapterAllProfilePic(ArrayList<ItemAllProfilePic> arrayList, Context context, ProfileFavClickListener listener) {
         this.arrayList = arrayList;
         this.context = context;
-        this.listener = listener;
+        this.favClickListener = listener;
     }
 
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(context).inflate(R.layout.all_profile_item,parent,false);
-
+        View v = LayoutInflater.from(context).inflate(R.layout.recent_profilepic_item,parent,false);
         return new AllProfile(v);
     }
 
@@ -93,11 +73,16 @@ public class AdapterAllProfilePic extends RecyclerView.Adapter {
         AllProfile holder1 = (AllProfile) holder;
         itemAllProfilePic = arrayList.get(position);
 
-
-        if (itemAllProfilePic.getBookmark().contains("0")){
-            holder1.fav.setImageResource(R.drawable.favorite_border_24);
-        } else  {
-            holder1.fav.setImageResource(R.drawable.favorite_24);
+        database = new DatabaseHelper(context);
+        Cursor cursor = database.getProfile_fav();
+        while (cursor.moveToNext()){
+            serverid = cursor.getInt(4);
+            if (serverid == Integer.parseInt(itemAllProfilePic.getId())) {
+                Log.d("id : ",itemAllProfilePic.getId());
+                holder1.favImg.setImageResource(R.drawable.favorite_24);
+                itemAllProfilePic.setBookmarked(true);
+                break;
+            }
         }
 
 
@@ -116,83 +101,37 @@ public class AdapterAllProfilePic extends RecyclerView.Adapter {
         holder1.marquee.setText(itemAllProfilePic.getTitle());
 
         holder1.download.setOnClickListener(v ->{
-            BitmapDrawable bitmapDrawable = (BitmapDrawable) holder1.image_profile.getDrawable();
+            BitmapDrawable bitmapDrawable = (BitmapDrawable) holder1.profilePic.getDrawable();
             Bitmap bitmap = bitmapDrawable.getBitmap();
             saveImage(bitmap);
         });
 
         holder1.share.setOnClickListener(v -> {
-            BitmapDrawable bitmapDrawable = (BitmapDrawable) holder1.image_profile.getDrawable();
+            BitmapDrawable bitmapDrawable = (BitmapDrawable) holder1.profilePic.getDrawable();
             Bitmap bitmap = bitmapDrawable.getBitmap();
             shareImageAndText(bitmap);
         });
-        Picasso.get().load(itemAllProfilePic.getImage()).placeholder(R.drawable.material_design_default).into(holder1.image_profile);
-        holder1.image_profile.setOnClickListener(v -> {
-            Intent intent = new Intent(context, ShowImage.class);
-            intent.putExtra("image",""+itemAllProfilePic.getImage());
-            intent.putExtra("title",""+itemAllProfilePic.getTitle());
-            intent.putExtra("type",false);
-            context.startActivity(intent);
-        });
+        Picasso.get().load(itemAllProfilePic.getImage()).into(holder1.profilePic);
 
-        holder1.fav.setOnClickListener(v -> {
-
-//            isAdded = !isAdded;
-//
-//            if(isAdded){
-//                holder1.fav.setImageResource(R.drawable.favorite_24);
-//                favControl(itemAllProfilePic.getId(),"1");
-//                Toast.makeText(context,"Added",Toast.LENGTH_SHORT).show();
-//                Log.d("FAV",""+position);
-//            }else {
-//                holder1.fav.setImageResource(R.drawable.favorite_border_24);
-//                favControl(itemAllProfilePic.getId(),"0");
-//                Toast.makeText(context,"Removed",Toast.LENGTH_SHORT).show();
-//                Log.d("FAV2",""+position);
-//            }
-
-            listener.onProfileItemClick(itemAllProfilePic, holder1.fav, position);
+        showImg(holder1,position);
 
 
-//            if (itemAllProfilePic.getBookmark().contains("0")){
-//                holder1.fav.setImageResource(R.drawable.favorite_24);
-//                favControl(itemAllProfilePic.getId(),"1");
-//                Toast.makeText(context,"Added",Toast.LENGTH_SHORT).show();
-//                Log.d("FAV",""+position);
-//
-//            } else {
-//                holder1.fav.setImageResource(R.drawable.favorite_border_24);
-//                favControl(itemAllProfilePic.getId(),"0");
-//                Toast.makeText(context,"Removed",Toast.LENGTH_SHORT).show();
-//                Log.d("FAV2",""+position);
-//            }
+        if (itemAllProfilePic.getIsBookmarked()){
 
+            holder1.fav.setOnClickListener(v -> {
+                holder1.favImg.setImageResource(R.drawable.favorite_border_24);
+                itemAllProfilePic.setBookmarked(false);
+                favClickListener.profileFavClick(position,false);
+            });
 
-
-//            if (userId.contains("NULL")){
-//                Toast.makeText(context,"Please Sign In",Toast.LENGTH_SHORT).show();
-//            }else {
-//
-//
-//                holder1.fav.setImageResource(R.drawable.favorite_24);
-//                bookmarksRef = FirebaseDatabase.getInstance().getReference("users/" + userId + "/bookmarks");
-//
-//                String bookmarkId = bookmarksRef.push().getKey();
-//                Map<String, Object> bookmarkData = new HashMap<>();
-//                bookmarkData.put("title", itemAllProfilePic.getTitle());
-//                bookmarkData.put("url", itemAllProfilePic.getImage());
-//                bookmarkData.put("type", itemAllProfilePic.getType());
-//                bookmarkData.put("timestamp", ServerValue.TIMESTAMP);
-//                itemAllProfilePic.setBookmarked(true);
-//                bookmarkData.put("isBookmarked",itemAllProfilePic.getIsBookmarked());
-//
-//                bookmarksRef.child(bookmarkId).setValue(bookmarkData);
-//                Toast.makeText(context,"Bookmarked",Toast.LENGTH_SHORT).show();
-//            }
-
-
-
-        });
+        }else {
+            holder1.fav.setOnClickListener(v -> {
+                holder1.favImg.setImageResource(R.drawable.favorite_24);
+                itemAllProfilePic.setBookmarked(true);
+                Toast.makeText(context,"Added to favourite",Toast.LENGTH_SHORT).show();
+                favClickListener.profileFavClick(position,true);
+            });
+        }
     }
 
     @Override
@@ -200,15 +139,18 @@ public class AdapterAllProfilePic extends RecyclerView.Adapter {
         return arrayList.size();
     }
     public class AllProfile extends RecyclerView.ViewHolder{
-        ImageView image_profile,fav,download,share;
+        RelativeLayout fav,download,share;
+        ImageView profilePic,favImg;
         TextView marquee;
         public AllProfile(@NonNull View itemView) {
             super(itemView);
-            image_profile = itemView.findViewById(R.id.image_profile);
+
             fav = itemView.findViewById(R.id.fav);
-            download = itemView.findViewById(R.id.download);
             share = itemView.findViewById(R.id.share);
+            download = itemView.findViewById(R.id.download);
+            profilePic = itemView.findViewById(R.id.profilePic);
             marquee = itemView.findViewById(R.id.marquee);
+            favImg = itemView.findViewById(R.id.favImg);
         }
     }
 
@@ -263,22 +205,17 @@ public class AdapterAllProfilePic extends RecyclerView.Adapter {
             Toast.makeText(context, "Error found.\nImage not saved", Toast.LENGTH_SHORT).show();
         }
     }
-    private void favControl(String id,String bookmark){
-        StringRequest stringRequest = new StringRequest(Request.Method.POST, "https://developerobaida.com/post_bank/fav_update.php", response -> {
-            Log.d("Response fav","Response");
-        }, error -> {
-            Log.d("Error fav","error");
-        }){
-            @Nullable
-            @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
-                Map<String,String> stringMap = new HashMap<>();
-                stringMap.put("bookmark",bookmark);
-                stringMap.put("id",id);
-                return stringMap;
-            }
-        };
-        RequestQueue requestQueue = Volley.newRequestQueue(context);
-        requestQueue.add(stringRequest);
+    void showImg(AllProfile holder1,int p){
+        if (p >= 0 && p < arrayList.size()) {
+
+            ItemAllProfilePic clickedItem = arrayList.get(p);
+            holder1.profilePic.setOnClickListener(v -> {
+                Intent intent = new Intent(context, ShowImage.class);
+                intent.putExtra("image",""+clickedItem.getImage());
+                intent.putExtra("title",""+clickedItem.getTitle());
+                intent.putExtra("type",false);
+                context.startActivity(intent);
+            });
+        }
     }
 }

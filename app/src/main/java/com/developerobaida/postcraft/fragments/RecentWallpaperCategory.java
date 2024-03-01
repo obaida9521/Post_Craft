@@ -16,19 +16,21 @@ import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.Volley;
 import com.developerobaida.postcraft.R;
 import com.developerobaida.postcraft.adapters.AdapterRecentWallpaper;
+import com.developerobaida.postcraft.database.DatabaseHelper;
 import com.developerobaida.postcraft.model.ItemRecentWallpaper;
 import com.facebook.shimmer.ShimmerFrameLayout;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.ArrayList;
-public class RecentWallpaperCategory extends Fragment {
+public class RecentWallpaperCategory extends Fragment implements AdapterRecentWallpaper.RecentWallFavClickListener{
     AdapterRecentWallpaper adapterRecentWallpaper;
     ArrayList<ItemRecentWallpaper> arrayList = new ArrayList<>();
     RecyclerView recyclerRecentVideoCat;
     JsonArrayRequest jsonArrayRequest;
     ShimmerFrameLayout effect;
     RelativeLayout retryLay;
+    DatabaseHelper database;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
@@ -39,6 +41,7 @@ public class RecentWallpaperCategory extends Fragment {
         recyclerRecentVideoCat = v.findViewById(R.id.recyclerRecentVideoCat);
         effect = v.findViewById(R.id.effect);
         retryLay = v.findViewById(R.id.retryLay);
+        database = new DatabaseHelper(getContext());
         getData();
 
         return v;
@@ -52,13 +55,16 @@ public class RecentWallpaperCategory extends Fragment {
             try {
                 for (int i = 0; i<response.length(); i++){
                     JSONObject jsonObject = response.getJSONObject(i);
+
+                    String id = jsonObject.getString("id");
                     String wall = jsonObject.getString("wallpaper");
                     String title = jsonObject.getString("title");
+                    String category = jsonObject.getString("category");
+                    String type = jsonObject.getString("type");
 
-                    arrayList.add(new ItemRecentWallpaper(getWallpaper+wall,""+title));
-
+                    arrayList.add(new ItemRecentWallpaper(getWallpaper+wall,""+title,""+category,""+id,""+type));
                 }
-                adapterRecentWallpaper = new AdapterRecentWallpaper(arrayList, getContext());
+                adapterRecentWallpaper = new AdapterRecentWallpaper(arrayList, getContext(),this);
                 recyclerRecentVideoCat.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
                 recyclerRecentVideoCat.setAdapter(adapterRecentWallpaper);
 
@@ -87,5 +93,14 @@ public class RecentWallpaperCategory extends Fragment {
                 requestQueue.add(jsonArrayRequest);
             }
         });
+    }
+
+    @Override
+    public void wallFavClick(int position, boolean isFav) {
+        if (position >= 0 && position < arrayList.size()) {
+            ItemRecentWallpaper clickedItem = arrayList.get(position);
+            if (isFav) database.addWall_fav(clickedItem.getWallpaper(),clickedItem.getTitle(),clickedItem.getType(),clickedItem.getId());
+            else database.deleteWall_fav(Integer.parseInt(clickedItem.getId()));
+        }
     }
 }

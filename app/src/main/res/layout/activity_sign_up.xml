@@ -34,6 +34,7 @@
             android:layout_height="45dp"
             android:inputType="text"
             android:hint="Name"
+            android:textColorHint="#ACA0A0"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
             android:textColor="@color/black"
@@ -50,6 +51,7 @@
             android:layout_height="45dp"
             android:inputType="textEmailAddress"
             android:hint="Email"
+            android:textColorHint="#ACA0A0"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
             android:textColor="@color/black"
@@ -66,6 +68,7 @@
             android:layout_height="45dp"
             android:inputType="textEmailAddress"
             android:hint="Number"
+            android:textColorHint="#ACA0A0"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
             android:textColor="@color/black"
@@ -83,10 +86,11 @@
             android:layout_height="45dp"
             android:inputType="textPassword"
             android:hint="Password"
+            android:textColorHint="#ACA0A0"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
             android:textColor="@color/black"
-            android:imeOptions="actionNext"
+            android:imeOptions="actionDone"
             android:importantForAutofill="no"
             android:textSize="13sp"
             android:layout_marginTop="16dp"
@@ -94,30 +98,10 @@
             android:fontFamily="@font/readex_light"
             />
 
-        <RadioGroup
-            android:id="@+id/radioGroup"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="16dp"
-            >
-            <RadioButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Male"
-                android:fontFamily="@font/readex_light"
-                />
-            <RadioButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Female"
-                android:fontFamily="@font/readex_light"
-                />
-        </RadioGroup>
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="20dp"
             android:animateLayoutChanges="true"
             >
             <com.google.android.material.button.MaterialButton
@@ -152,13 +136,15 @@
             android:textStyle="bold"
             android:fontFamily="@font/readex_light"
             android:textColor="@color/darkBlue"
+            android:clickable="true"
+            android:foreground="?attr/selectableItemBackground"
             />
         <TextView
             android:id="@+id/textPrivacy"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="See our privacy policy"
-            android:layout_marginTop="5dp"
+            android:layout_marginTop="10dp"
             android:textSize="12dp"
             android:textStyle="bold"
             android:textColor="@color/brightBlue"

@@ -1,27 +1,16 @@
 package com.developerobaida.postcraft.model;
 
 public class ItemAllProfilePic {
-    String image,title,category,type,id,bookmark;
-    boolean isBookmarked;
+    String image,title,category,type,id;
+    boolean isBookmarked = false;
 
-    public ItemAllProfilePic(String image, String title, String category,String type,String id,String bookmark) {
+    public ItemAllProfilePic(String image, String title, String category,String type,String id) {
         this.image = image;
         this.title = title;
         this.category = category;
         this.type = type;
-        this.isBookmarked = isBookmarked;
         this.id = id;
-        this.bookmark = bookmark;
     }
-
-    public String getBookmark() {
-        return bookmark;
-    }
-
-    public void setBookmark(String bookmark) {
-        this.bookmark = bookmark;
-    }
-
     public String getId() {
         return id;
     }

@@ -16,6 +16,11 @@ import java.util.ArrayList;
 public class AdapterFont extends RecyclerView.Adapter<AdapterFont.FontHolder>{
     ArrayList<ItemFont> arrayList;
     Context context;
+    public void setFilter(ArrayList<ItemFont> newList) {
+        arrayList = new ArrayList<>();
+        arrayList.addAll(newList);
+        notifyDataSetChanged();
+    }
 
     public interface OnItemClickListener {
         void onItemClick(ItemFont item);
@@ -28,7 +33,8 @@ public class AdapterFont extends RecyclerView.Adapter<AdapterFont.FontHolder>{
     }
 
     public AdapterFont(ArrayList<ItemFont> arrayList, Context context) {
-        this.arrayList = arrayList;
+        if (arrayList == null) this.arrayList = new ArrayList<>();
+        else this.arrayList = arrayList;
         this.context = context;
     }
 

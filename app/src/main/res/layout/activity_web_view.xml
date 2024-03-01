@@ -33,7 +33,6 @@
             android:id="@+id/title"
             android:layout_width="150dp"
             android:layout_height="wrap_content"
-            android:text="About Us"
             android:singleLine="true"
             android:scrollHorizontally="true"
             android:ellipsize="marquee"
@@ -54,7 +53,7 @@
         android:layout_marginTop="?attr/actionBarSize"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/web_v"
+        android:id="@+id/web"
         />
 
 </RelativeLayout>

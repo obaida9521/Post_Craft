@@ -91,7 +91,7 @@
                 android:layout_weight="1"
                 android:clickable="true"
                 android:foreground="?attr/selectableItemBackground"
-                app:tint="@color/darkBlue" />
+                app:tint="#F13F07" />
             <ImageView
                 android:layout_width="35dp"
                 android:layout_height="35dp"
@@ -100,7 +100,7 @@
                 android:layout_weight="1"
                 android:clickable="true"
                 android:foreground="?attr/selectableItemBackground"
-                app:tint="@color/darkBlue"
+                app:tint="#B8B8B8"
                 />
             <ImageView
                 android:layout_width="35dp"
@@ -110,7 +110,7 @@
                 android:layout_weight="1"
                 android:padding="5dp"
                 android:clickable="true"
-                app:tint="@color/darkBlue"
+                app:tint="#B8B8B8"
                 android:foreground="?attr/selectableItemBackground"
                 />
         </LinearLayout>

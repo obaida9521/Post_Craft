@@ -4,10 +4,12 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +25,7 @@ import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.RecyclerView;
 import com.developerobaida.postcraft.R;
 import com.developerobaida.postcraft.activities.ShowImage;
+import com.developerobaida.postcraft.database.DatabaseHelper;
 import com.developerobaida.postcraft.model.ItemRecentWallpaper;
 import com.squareup.picasso.Picasso;
 
@@ -37,10 +40,18 @@ public class AdapterRecentWallpaper extends RecyclerView.Adapter<AdapterRecentWa
 
     ArrayList<ItemRecentWallpaper> arrayList;
     Context context;
+    DatabaseHelper database;
+    int serverid;
 
-    public AdapterRecentWallpaper(ArrayList<ItemRecentWallpaper> arrayList, Context context) {
+    public interface RecentWallFavClickListener {
+        void wallFavClick(int position, boolean isFav);
+    }
+    private RecentWallFavClickListener favClickListener;
+
+    public AdapterRecentWallpaper(ArrayList<ItemRecentWallpaper> arrayList, Context context,RecentWallFavClickListener listener) {
         this.arrayList = arrayList;
         this.context = context;
+        this.favClickListener = listener;
     }
 
     @NonNull
@@ -54,6 +65,18 @@ public class AdapterRecentWallpaper extends RecyclerView.Adapter<AdapterRecentWa
     @Override
     public void onBindViewHolder(@NonNull RecentView holder, int position) {
         ItemRecentWallpaper recentWallpaper = arrayList.get(position);
+
+        database = new DatabaseHelper(context);
+        Cursor cursor = database.getWall_fav();
+        while (cursor.moveToNext()){
+            serverid = cursor.getInt(4);
+            if (serverid == Integer.parseInt(recentWallpaper.getId())) {
+                Log.d("id : ",recentWallpaper.getId());
+                holder.imgFav.setImageResource(R.drawable.favorite_24);
+                recentWallpaper.setBookmarked(true);
+                break;
+            }
+        }
         Animation animation = AnimationUtils.loadAnimation(context, R.anim.item_animation_from_bottom);
         holder.itemView.startAnimation(animation);
         animation.setAnimationListener(new Animation.AnimationListener() {
@@ -86,6 +109,21 @@ public class AdapterRecentWallpaper extends RecyclerView.Adapter<AdapterRecentWa
             Bitmap bitmap = bitmapDrawable.getBitmap();
             saveImage(bitmap);
         });
+
+        if (recentWallpaper.getIsBookmarked()){
+            holder.fav.setOnClickListener(v -> {
+                holder.imgFav.setImageResource(R.drawable.favorite_border_24);
+                recentWallpaper.setBookmarked(false);
+                favClickListener.wallFavClick(position,false);
+            });
+        }else {
+            holder.fav.setOnClickListener(v -> {
+                holder.imgFav.setImageResource(R.drawable.favorite_24);
+                recentWallpaper.setBookmarked(true);
+                Toast.makeText(context,"Added to favourite",Toast.LENGTH_SHORT).show();
+                favClickListener.wallFavClick(position,true);
+            });
+        }
     }
 
     @Override
@@ -96,7 +134,7 @@ public class AdapterRecentWallpaper extends RecyclerView.Adapter<AdapterRecentWa
     public class RecentView extends RecyclerView.ViewHolder{
         RelativeLayout fav,download,share;
         TextView marquee;
-        ImageView wallpaper;
+        ImageView wallpaper,imgFav;
         public RecentView(@NonNull View itemView) {
             super(itemView);
 
@@ -105,6 +143,7 @@ public class AdapterRecentWallpaper extends RecyclerView.Adapter<AdapterRecentWa
             marquee = itemView.findViewById(R.id.marquee);
             wallpaper = itemView.findViewById(R.id.wallpaper);
             share = itemView.findViewById(R.id.share);
+            imgFav = itemView.findViewById(R.id.imgFav);
         }
     }
 

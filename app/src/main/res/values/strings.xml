@@ -6,23 +6,42 @@
     <string name="CLOSE">Close drawer</string>
 
 
-    <string-array name="categories_array">
+    <string-array name="post_category">
         <item>All</item>
         <item>English</item>
         <item>Arabic</item>
         <item>Bangla</item>
     </string-array>
-    <string-array name="categories_wallpaper">
+    <string-array name="wallpaper_category">
         <item>All</item>
         <item>Islamic</item>
         <item>Nature</item>
+        <item>Romantic</item>
     </string-array>
 
-    <string-array name="categories_profile">
+    <string-array name="profile_category">
         <item>All</item>
         <item>Image</item>
         <item>English Name</item>
         <item>Arabic Name</item>
         <item>Bangla Name</item>
+    </string-array>
+
+    <string-array name="font_category">
+        <item>All</item>
+        <item>English/Arabic</item>
+        <item>Bangla</item>
+    </string-array>
+
+    <string-array name="background_category">
+        <item>All</item>
+        <item>Space</item>
+        <item>Nature</item>
+        <item>Lovely</item>
+        <item>Funny</item>
+        <item>Color Tone</item>
+        <item>blurry</item>
+        <item>Rain</item>
+
     </string-array>
 </resources>

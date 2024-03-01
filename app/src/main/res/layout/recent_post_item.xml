@@ -69,6 +69,7 @@
             android:foreground="?attr/selectableItemBackground">
 
             <ImageView
+                android:id="@+id/favImg"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:padding="5dp"

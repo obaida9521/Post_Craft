@@ -5,11 +5,63 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".activities.ViewBookmark"
+    android:background="@color/background"
     >
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="65dp"
+        android:id="@+id/svl"
+        android:background="@color/white"
+        android:elevation="8dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        >
+        <ImageView
+            android:id="@+id/back"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:src="@drawable/back_24"
+            app:tint="@color/darkBlue"
+            android:layout_marginLeft="10dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/lin"
+            app:layout_constraintBottom_toBottomOf="@id/lin"
+            android:clickable="true"
+            android:foreground="?attr/selectableItemBackground"
+            />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Favourites"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@color/darkBlue"
+            android:layout_marginLeft="20sp"
+            android:fontFamily="@font/readex_light"
+            app:layout_constraintStart_toEndOf="@+id/back"
+            app:layout_constraintTop_toTopOf="@+id/lin"
+            app:layout_constraintBottom_toBottomOf="@id/lin"
+
+            />
+        <LinearLayout
+            android:id="@+id/lin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginRight="5dp"
+            >
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
     <androidx.recyclerview.widget.RecyclerView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/bookmarkRec"
+        android:layout_below="@+id/svl"
         />
 
 </RelativeLayout>

@@ -16,6 +16,7 @@ import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.Volley;
 import com.developerobaida.postcraft.R;
 import com.developerobaida.postcraft.adapters.AdapterRecentProfilePic;
+import com.developerobaida.postcraft.database.DatabaseHelper;
 import com.developerobaida.postcraft.model.ItemRecentProfilePic;
 import com.facebook.shimmer.ShimmerFrameLayout;
 
@@ -24,13 +25,14 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-public class RecentProfilePicCategory extends Fragment {
+public class RecentProfilePicCategory extends Fragment implements AdapterRecentProfilePic.RecentProfileFavClickListener{
     AdapterRecentProfilePic adapterRecentProfilePic;
     RecyclerView recyclerRecentProfilePicCat;
     ArrayList<ItemRecentProfilePic> arrayList = new ArrayList<>();
     ShimmerFrameLayout effect;
     RelativeLayout retryLay;
     JsonArrayRequest jsonArrayRequest;
+    DatabaseHelper database;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
         if (container!=null){
@@ -38,6 +40,7 @@ public class RecentProfilePicCategory extends Fragment {
         }
         View v =  inflater.inflate(R.layout.fragment_recent_profile_pic_category, container, false);
         recyclerRecentProfilePicCat = v.findViewById(R.id.recyclerRecentProfilePicCat);
+        database = new DatabaseHelper(getContext());
         effect = v.findViewById(R.id.effect);
         retryLay = v.findViewById(R.id.retryLay);
         getData();
@@ -54,13 +57,15 @@ public class RecentProfilePicCategory extends Fragment {
             try {
                 for (int i=0; i<response.length();i++){
                     JSONObject jsonObject = response.getJSONObject(i);
+                    String id = jsonObject.getString("id");
                     String image = jsonObject.getString("image");
                     String title = jsonObject.getString("title");
                     String category = jsonObject.getString("category");
+                    String type = jsonObject.getString("type");
 
-                    arrayList.add(new ItemRecentProfilePic(profilePic+image,title,category));
+                    arrayList.add(new ItemRecentProfilePic(profilePic+image,title,category,id,type));
                 }
-                adapterRecentProfilePic = new AdapterRecentProfilePic(arrayList,getContext());
+                adapterRecentProfilePic = new AdapterRecentProfilePic(arrayList,getContext(),this);
                 recyclerRecentProfilePicCat.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
                 recyclerRecentProfilePicCat.setAdapter(adapterRecentProfilePic);
 
@@ -90,4 +95,12 @@ public class RecentProfilePicCategory extends Fragment {
         });
     }
 
+    @Override
+    public void recentProfileFavClickListener(int position, boolean isFav) {
+        if (position >= 0 && position < arrayList.size()) {
+            ItemRecentProfilePic clickedItem = arrayList.get(position);
+            if (isFav)database.addProfile_fav(clickedItem.getImage(),clickedItem.getTitle(),clickedItem.getType(),clickedItem.getId());
+            else database.deleteProfile_fav(Integer.parseInt(clickedItem.getId()));
+        }
+    }
 }

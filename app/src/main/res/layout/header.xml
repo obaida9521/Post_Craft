@@ -70,9 +70,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Sign In"
+            android:textColor="@color/black"
             android:id="@+id/signIn_header"
             android:layout_gravity="center"
-            android:backgroundTint="@color/darkBlue"
+            android:backgroundTint="@color/selected"
             android:fontFamily="@font/readex_light"
             />
     </LinearLayout>

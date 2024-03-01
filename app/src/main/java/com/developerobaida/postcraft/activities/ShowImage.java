@@ -5,15 +5,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.app.WallpaperManager;
 import android.content.ContentResolver;
 import android.content.ContentValues;
-import android.content.Intent;
-import android.content.res.ColorStateList;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.view.View;
@@ -43,10 +39,8 @@ public class ShowImage extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_image);
-        if (Build.VERSION.SDK_INT>=21){
-            Window window = getWindow();
-            window.setStatusBarColor(this.getColor(R.color.black));
-        }
+        Window window = getWindow();
+        window.setStatusBarColor(this.getColor(R.color.black));
 
         download = findViewById(R.id.download);
         image = findViewById(R.id.image);
@@ -59,6 +53,7 @@ public class ShowImage extends AppCompatActivity {
 
 
         Bundle bundle = getIntent().getExtras();
+        assert bundle != null;
         String img = bundle.getString("image");
         String sTitle = bundle.getString("title");
         boolean isVisible = bundle.getBoolean("type");
@@ -119,7 +114,6 @@ public class ShowImage extends AppCompatActivity {
             WallpaperManager wallpaperManager = WallpaperManager.getInstance(ShowImage.this);
             Bitmap bitmap = ((BitmapDrawable) image.getDrawable()).getBitmap();
             try {
-
                 wallpaperManager.setBitmap(bitmap);
                 return true;
             } catch (Exception e) {

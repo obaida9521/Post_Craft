@@ -8,6 +8,7 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -45,6 +46,9 @@ import com.google.android.play.core.install.InstallStateUpdatedListener;
 import com.google.android.play.core.install.model.AppUpdateType;
 import com.google.android.play.core.install.model.InstallStatus;
 import com.google.android.play.core.install.model.UpdateAvailability;
+import com.google.android.play.core.review.ReviewInfo;
+import com.google.android.play.core.review.ReviewManager;
+import com.google.android.play.core.review.ReviewManagerFactory;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -61,19 +65,22 @@ import nl.joery.animatedbottombar.AnimatedBottomBar;
 
 public class MainActivity extends AppCompatActivity {
     AnimatedBottomBar bottom_bar;
+    ReviewManager reviewManager;
+    ReviewInfo reviewInfo;
     AppUpdateManager appUpdateManager;
     NavigationView drawer;
     DrawerLayout drawerLay;
     MaterialToolbar toolbar;
     Button signIn_header;
-    TextView userName,userMail;
+    TextView userName, userMail;
     ImageView userImage;
-    private  final int REQ_CODE = 10;
+    private final int REQ_CODE = 10;
     View headerView;
     DatabaseReference reference;
     FirebaseUser firebaseUser;
     private static final String USERS = "users";
     String userId;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -85,8 +92,11 @@ public class MainActivity extends AppCompatActivity {
         headerView = drawer.getHeaderView(0);
         bottom_bar = findViewById(R.id.bottom_bar);
         toolbar = findViewById(R.id.toolbar);
-
-
+        reqReview();
+        checkForUpdate();
+        myPermissions();
+        setSupportActionBar(toolbar);
+        loadUserDetails();
 
         signIn_header = headerView.findViewById(R.id.signIn_header);
         userImage = headerView.findViewById(R.id.userImage);
@@ -95,50 +105,54 @@ public class MainActivity extends AppCompatActivity {
         userMail.setSelected(true);
         userName.setSelected(true);
         userImage.setOnClickListener(v -> {
-            if (firebaseUser.getUid()!=null){
-                Intent intent = new Intent(this,UserProfile.class);
+            firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+            if (firebaseUser != null) {
+                Intent intent = new Intent(this, UserProfile.class);
                 startActivity(intent);
-            }else{
-                Toast.makeText(this,"You don't have account",Toast.LENGTH_SHORT).show();
-            }
+            } else Toast.makeText(this, "Please Sign in", Toast.LENGTH_SHORT).show();
+
         });
 
 
         signIn_header.setOnClickListener(v -> {
-            Intent intent = new Intent(this,SignIn.class);
+            Intent intent = new Intent(this, SignIn.class);
             startActivity(intent);
         });
 
 
-        checkForUpdate();
-        myPermissions();
-        loadUserDetails();
-        setSupportActionBar(toolbar);
-
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this,drawerLay,toolbar,R.string.OPEN,R.string.CLOSE);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLay, toolbar, R.string.OPEN, R.string.CLOSE);
         drawerLay.addDrawerListener(toggle);
         drawer.setNavigationItemSelectedListener(item -> {
 
-            if (item.getItemId()==R.id.favourite){
-                Intent intent = new Intent(MainActivity.this,ViewBookmark.class);
+            if (item.getItemId() == R.id.favourite) {
+                Intent intent = new Intent(MainActivity.this, ViewBookmark.class);
                 startActivity(intent);
-
-            } else if (item.getItemId()==R.id.rating) {
-
-            } else if (item.getItemId()==R.id.settings) {
-               
-            } else if (item.getItemId()==R.id.about) {
-               
-            } else if (item.getItemId()==R.id.logout) {
+                drawerLay.closeDrawer(GravityCompat.START);
+            } else if (item.getItemId() == R.id.rating) {
+                reviewFlow();
+                drawerLay.closeDrawer(GravityCompat.START);
+            } else if (item.getItemId() == R.id.about) {
+                Intent intent = new Intent(MainActivity.this, WebView.class);
+                intent.putExtra("title", "About Us");
+                intent.putExtra("link", "https://sites.google.com/view/postcraftaboutus/home");
+                startActivity(intent);
+                drawerLay.closeDrawer(GravityCompat.START);
+            } else if (item.getItemId() == R.id.logout) {
                 FirebaseAuth.getInstance().signOut();
-                Intent intent = new Intent(MainActivity.this,SignIn.class);
+                Intent intent = new Intent(MainActivity.this, SignIn.class);
                 startActivity(intent);
                 finish();
-            } else if (item.getItemId()==R.id.profile) {
-                Intent intent = new Intent(MainActivity.this,UserProfile.class);
+                drawerLay.closeDrawer(GravityCompat.START);
+            } else if (item.getItemId() == R.id.profile) {
+                Intent intent = new Intent(MainActivity.this, UserProfile.class);
                 startActivity(intent);
-            } else if (item.getItemId()==R.id.privacy) {
-
+                drawerLay.closeDrawer(GravityCompat.START);
+            } else if (item.getItemId() == R.id.privacy) {
+                Intent intent = new Intent(MainActivity.this, WebView.class);
+                intent.putExtra("title", "Privacy");
+                intent.putExtra("link", "https://sites.google.com/view/post-craft/home");
+                startActivity(intent);
+                drawerLay.closeDrawer(GravityCompat.START);
             }
 
             return true;
@@ -146,7 +160,7 @@ public class MainActivity extends AppCompatActivity {
 
         FragmentManager manager = getSupportFragmentManager();
         FragmentTransaction transaction = manager.beginTransaction();
-        transaction.replace(R.id.frame,new Home());
+        transaction.replace(R.id.frame, new Home());
         transaction.commit();
 
         bottom_bar.setOnTabSelectListener(new AnimatedBottomBar.OnTabSelectListener() {
@@ -154,13 +168,14 @@ public class MainActivity extends AppCompatActivity {
             public void onTabSelected(int i, @Nullable AnimatedBottomBar.Tab tab, int i1, @NonNull AnimatedBottomBar.Tab tab1) {
                 Fragment fragment;
                 if (tab1.getId() == R.id.home) fragment = new Home();
-                 else if (tab1.getId() == R.id.post) fragment = new AllPost();
-                 else if (tab1.getId() == R.id.video) fragment = new AllWallpaper();
-                 else if (tab1.getId() == R.id.profilePic) fragment = new AllProfilePic();
-                 else fragment = new Home();
+                else if (tab1.getId() == R.id.post) fragment = new AllPost();
+                else if (tab1.getId() == R.id.video) fragment = new AllWallpaper();
+                else if (tab1.getId() == R.id.profilePic) fragment = new AllProfilePic();
+                else fragment = new Home();
 
                 switchFragment(fragment);
             }
+
             @Override
             public void onTabReselected(int i, @NonNull AnimatedBottomBar.Tab tab) {}
         });
@@ -168,7 +183,7 @@ public class MainActivity extends AppCompatActivity {
     }//========================================on create=========================================
 
     //---------------------in app update----------------------------------------------------
-    public void checkForUpdate(){
+    public void checkForUpdate() {
         appUpdateManager = AppUpdateManagerFactory.create(this);
 
         Task<AppUpdateInfo> appUpdateInfoTask = appUpdateManager.getAppUpdateInfo();
@@ -176,7 +191,7 @@ public class MainActivity extends AppCompatActivity {
         appUpdateInfoTask.addOnSuccessListener(appUpdateInfo -> {
             if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)) {
                 try {
-                    appUpdateManager.startUpdateFlowForResult(appUpdateInfo, AppUpdateType.FLEXIBLE,this,REQ_CODE);
+                    appUpdateManager.startUpdateFlowForResult(appUpdateInfo, AppUpdateType.FLEXIBLE, this, REQ_CODE);
                 } catch (IntentSender.SendIntentException e) {
                     throw new RuntimeException(e);
                 }
@@ -184,9 +199,11 @@ public class MainActivity extends AppCompatActivity {
         });
         appUpdateManager.registerListener(listener);
     }
+
     InstallStateUpdatedListener listener = state -> {
         if (state.installStatus() == InstallStatus.DOWNLOADED) popupSnackbarForCompleteUpdate();
     };
+
     private void popupSnackbarForCompleteUpdate() {
         Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content), "An update has just been downloaded.", Snackbar.LENGTH_INDEFINITE);
         snackbar.setAction("INSTALL", view -> appUpdateManager.completeUpdate());
@@ -202,45 +219,53 @@ public class MainActivity extends AppCompatActivity {
     //---------------------in app update----------------------------------------------------
 
     public void changeTab(int tabId) {
-        bottom_bar.selectTabById(tabId,true);
+        bottom_bar.selectTabById(tabId, true);
     }
+
     private void switchFragment(Fragment fragment) {
         getSupportFragmentManager().beginTransaction().replace(R.id.frame, fragment).addToBackStack(null).commit();
 
         int tabId;
         if (fragment instanceof Home) tabId = R.id.home;
-         else if (fragment instanceof AllPost) tabId = R.id.post;
-         else if (fragment instanceof AllWallpaper) tabId = R.id.video;
-         else if (fragment instanceof AllProfilePic) tabId = R.id.profilePic;
-         else tabId = R.id.home;
+        else if (fragment instanceof AllPost) tabId = R.id.post;
+        else if (fragment instanceof AllWallpaper) tabId = R.id.video;
+        else if (fragment instanceof AllProfilePic) tabId = R.id.profilePic;
+        else tabId = R.id.home;
 
         bottom_bar.selectTabById(tabId, true);
     }
 
-    private final ActivityResultLauncher<String[]> requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), permission ->{
-                boolean allGranted = true;
-                for (Boolean isGranted : permission.values()){
-                    if (!isGranted){
-                        allGranted = false;
-                        break;
-                    }
-                }
-                if (allGranted) Log.d("permission",permission.toString());
+    private final ActivityResultLauncher<String[]> requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), permission -> {
+        boolean allGranted = true;
+        for (Boolean isGranted : permission.values()) {
+            if (!isGranted) {
+                allGranted = false;
+                break;
+            }
+        }
+        if (allGranted) Log.d("permission", permission.toString());
 
-            });
-    private void myPermissions(){
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU){
+    });
+
+    private void myPermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             String[] permissions = new String[]{android.Manifest.permission.READ_MEDIA_IMAGES, android.Manifest.permission.READ_MEDIA_AUDIO, android.Manifest.permission.READ_MEDIA_VIDEO};
             List<String> permissionsTORequest = new ArrayList<>();
-            for (String permission : permissions) if (ContextCompat.checkSelfPermission(this,permission) != PackageManager.PERMISSION_GRANTED) permissionsTORequest.add(permission);
+            for (String permission : permissions)
+                if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) permissionsTORequest.add(permission);
 
-            if (permissionsTORequest.isEmpty()){}
-            else {
+            if (permissionsTORequest.isEmpty()) {
+            } else {
                 String[] permissionsArray = permissionsTORequest.toArray(new String[0]);
                 boolean shouldShowRationale = false;
 
-                for (String permission : permissionsArray){if (shouldShowRequestPermissionRationale(permission)){shouldShowRationale = true;break;}}
-                if (shouldShowRationale){
+                for (String permission : permissionsArray) {
+                    if (shouldShowRequestPermissionRationale(permission)) {
+                        shouldShowRationale = true;
+                        break;
+                    }
+                }
+                if (shouldShowRationale) {
                     new AlertDialog.Builder(this).setMessage("Please allow all permissions").setCancelable(false)
                             .setPositiveButton("YES", (dialogInterface, i) -> requestPermissionLauncher.launch(permissionsArray))
                             .setNegativeButton("NO", (dialogInterface, i) -> dialogInterface.dismiss()).show();
@@ -250,14 +275,19 @@ public class MainActivity extends AppCompatActivity {
             String[] permissions = new String[]{android.Manifest.permission.READ_EXTERNAL_STORAGE};
 
             List<String> permissionsTORequest = new ArrayList<>();
-            for (String permission : permissions)if (ContextCompat.checkSelfPermission(this,permission) != PackageManager.PERMISSION_GRANTED) permissionsTORequest.add(permission);
-            if (permissionsTORequest.isEmpty()){}
-            else {
+            for (String permission : permissions)
+                if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) permissionsTORequest.add(permission);
+            if (permissionsTORequest.isEmpty()) {
+            } else {
                 String[] permissionsArray = permissionsTORequest.toArray(new String[0]);
                 boolean shouldShowRationale = false;
-                for (String permission : permissionsArray){
-                    if (shouldShowRequestPermissionRationale(permission)){shouldShowRationale = true;break;}}
-                if (shouldShowRationale){
+                for (String permission : permissionsArray) {
+                    if (shouldShowRequestPermissionRationale(permission)) {
+                        shouldShowRationale = true;
+                        break;
+                    }
+                }
+                if (shouldShowRationale) {
                     new AlertDialog.Builder(this).setMessage("Please allow all permissions").setCancelable(false)
                             .setPositiveButton("YES", (dialogInterface, i) -> requestPermissionLauncher.launch(permissionsArray))
                             .setNegativeButton("NO", (dialogInterface, i) -> dialogInterface.dismiss()).show();
@@ -267,10 +297,26 @@ public class MainActivity extends AppCompatActivity {
         }
     } // myPermissions end here ================
 
-    private void loadUserDetails(){
+    private void reqReview() {
+        reviewManager = ReviewManagerFactory.create(this);
+        Task<ReviewInfo> request = reviewManager.requestReviewFlow();
+        request.addOnCompleteListener(task -> {
+            if (task.isSuccessful()) reviewInfo = task.getResult();
+            else Log.d("LOG", "Task not Successful");
+        });
+    }
+
+    private void reviewFlow(){
+        if (reviewInfo != null) {
+            Task<Void> flow = reviewManager.launchReviewFlow(this, reviewInfo);
+            flow.addOnCompleteListener(task -> Toast.makeText(this, "Review Successful", Toast.LENGTH_SHORT).show());
+        }
+    }
+
+    private void loadUserDetails() {
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
-        if (firebaseUser!=null){
+        if (firebaseUser != null) {
             Menu menu = drawer.getMenu();
             MenuItem logoutItem = menu.findItem(R.id.logout);
             MenuItem profileItem = menu.findItem(R.id.profile);
@@ -280,32 +326,31 @@ public class MainActivity extends AppCompatActivity {
             userId = firebaseUser.getUid();
             reference = FirebaseDatabase.getInstance().getReference(USERS);
             reference.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
-                String name,gmail,mobile,image;
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     User user = snapshot.getValue(User.class);
-                    if (user!=null){
-                        name = user.getDisplayName();
-                        gmail = user.getEmail();
-                        mobile = user.getPhoneNumber();
-                        image = user.getImageUrl();
-
-                        userName.setText(name);
-                        userMail.setText(gmail);
+                    if (user != null) {
+                        userName.setText(user.getDisplayName());
+                        userMail.setText(user.getEmail());
                         userMail.setVisibility(View.VISIBLE);
                         signIn_header.setVisibility(View.GONE);
 
-                        if (user.getImageUrl()!=null) Picasso.get().load(user.getImageUrl()).into(userImage);
+                        if (user.getImageUrl() != null) Picasso.get().load(user.getImageUrl()).into(userImage);
                         else userImage.setImageResource(R.drawable.man);
                     }
                 }
+
                 @Override
                 public void onCancelled(@NonNull DatabaseError error) {}
             });
-        }else {
-            userName.setText("User");
-            userMail.setText("Mail");
-            userImage.setImageResource(R.drawable.no_img);
+        } else {
+            try {
+                userName.setText("User");
+                userMail.setText("Mail");
+                userImage.setImageResource(R.drawable.no_img);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
             Menu menu = drawer.getMenu();
             MenuItem logoutItem = menu.findItem(R.id.logout);

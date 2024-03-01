@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
@@ -42,17 +41,20 @@ public class SignIn extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_in);
-        if (Build.VERSION.SDK_INT>=21){
-            Window window = getWindow();
-            window.setStatusBarColor(this.getColor(R.color.white));
-        }
-
+        Window window = getWindow();
+        window.setStatusBarColor(this.getColor(R.color.white));
         input_password = findViewById(R.id.input_password);
         input_email = findViewById(R.id.input_email);
         buttonSignIn = findViewById(R.id.buttonSignIn);
         textCreateNewAccount = findViewById(R.id.textCreateNewAccount);
         progressbar = findViewById(R.id.progressbar);
         textPrivacy =findViewById(R.id.textPrivacy);
+        textPrivacy.setOnClickListener(v -> {
+            Intent intent = new Intent(this,WebView.class);
+            intent.putExtra("title","Privacy Policy");
+            intent.putExtra("link","");
+            startActivity(intent);
+        });
         progressbar.getIndeterminateDrawable().setTint(Color.parseColor("#FFFFFF"));
 
         mAuth = FirebaseAuth.getInstance();

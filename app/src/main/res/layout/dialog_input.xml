@@ -28,8 +28,8 @@
                 android:id="@+id/title"
                 android:textSize="20dp"
                 android:textColor="@color/darkBlue"
-                android:fontFamily="@font/readex_light"
                 android:textStyle="bold"
+                android:fontFamily="@font/readex_light"
                 android:layout_alignParentLeft="true"
                 android:layout_marginLeft="20dp"
                 />
@@ -37,14 +37,31 @@
                 android:id="@+id/icon"
                 android:layout_width="26dp"
                 android:layout_height="26dp"
-                android:src="@drawable/wifi_off_24"
+                android:src="@drawable/baseline_delete_24"
                 app:tint="@color/darkBlue"
                 android:layout_marginRight="12dp"
                 android:layout_alignParentRight="true"
                 />
         </RelativeLayout>
 
-        <TextView
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            >
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPassword"
+                android:hint="Password"
+                android:id="@+id/pass"
+                android:textSize="16dp"
+                android:imeOptions="actionDone"
+                android:textColor="@color/black"
+                android:fontFamily="@font/readex_light"
+                />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!--<EditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/app_name"
@@ -52,9 +69,9 @@
             android:textSize="16dp"
             android:textColor="@color/black"
             android:textStyle="normal"
-            android:fontFamily="@font/readex_light"
             android:layout_marginLeft="20dp"
-            />
+            android:fontFamily="@font/readex_light"
+            />-->
         <View
             android:layout_width="match_parent"
             android:layout_height="1.5dp"
@@ -81,10 +98,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:text="Yes"
+                    android:fontFamily="@font/readex_light"
                     android:gravity="center"
                     android:textSize="17dp"
                     android:textStyle="bold"
-                    android:fontFamily="@font/readex_light"
                     android:textColor="@color/darkBlue"
                     />
             </androidx.cardview.widget.CardView>

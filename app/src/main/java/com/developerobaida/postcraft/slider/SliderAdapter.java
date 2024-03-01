@@ -35,7 +35,7 @@ public class SliderAdapter extends RecyclerView.Adapter<SliderAdapter.SliderView
 
     @Override
     public void onBindViewHolder(@NonNull SliderViewHolder holder, int position) {
-        holder.setImage(slideItems.get(position),position);
+        holder.setImage(slideItems.get(position));
     }
 
     @Override
@@ -49,10 +49,8 @@ public class SliderAdapter extends RecyclerView.Adapter<SliderAdapter.SliderView
             super(itemView);
             imageView = itemView.findViewById(R.id.imageView);
         }
-        void setImage(SlideItem slideItem, int p){
-
+        void setImage(SlideItem slideItem){
             Picasso.get().load(slideItem.getImageUrl()).placeholder(R.drawable.material_design_default).into(imageView);
-
         }
     }
 }

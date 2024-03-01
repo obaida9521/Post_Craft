@@ -9,12 +9,14 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import androidx.viewpager2.widget.CompositePageTransformer;
 import androidx.viewpager2.widget.MarginPageTransformer;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,6 +41,7 @@ import java.util.List;
 public class Home extends Fragment {
     int millis = 5000;
     ViewPager2 viewPager2;
+    SwipeRefreshLayout swiperefresh;
     LinearLayout seeStatus,seeVideo,seeProfilePic,edit_post;
     final Handler handler = new Handler(Looper.getMainLooper());
     final Runnable updateRunnable = new Runnable() {
@@ -62,36 +65,35 @@ public class Home extends Fragment {
         seeVideo = v.findViewById(R.id.seeVideo);
         seeProfilePic = v.findViewById(R.id.seeProfilePic);
         edit_post = v.findViewById(R.id.edit_post);
+        swiperefresh = v.findViewById(R.id.swiperefresh);
 
-        FragmentManager manager = getActivity().getSupportFragmentManager();
-        FragmentTransaction transaction = manager.beginTransaction();
-        transaction.add(R.id.frameStatus,new RecentPostCategory());
-        transaction.add(R.id.frameVideo,new RecentWallpaperCategory());
-        transaction.add(R.id.frameProfilePic,new RecentProfilePicCategory());
-        transaction.commit();
+        refreshing();
 
         seeStatus.setOnClickListener(v1 -> {if (getActivity() instanceof MainActivity) ((MainActivity) getActivity()).changeTab(R.id.post);});
         seeVideo.setOnClickListener(v1 -> {if (getActivity() instanceof MainActivity) ((MainActivity) getActivity()).changeTab(R.id.video);});
         seeProfilePic.setOnClickListener(v1 -> {if (getActivity() instanceof MainActivity) ((MainActivity) getActivity()).changeTab(R.id.profilePic);});
+
+        swiperefresh.setOnRefreshListener(() -> {
+            refreshing();
+            if (swiperefresh.isRefreshing()) swiperefresh.setRefreshing(false);
+        });
 
 
         edit_post.setOnClickListener(v1 -> {
             if (isNetworkAvailable()){
                 Intent intent = new Intent(getContext(), EditPostActivity.class);
                 intent.putExtra("status","Write something..");
-                intent.putExtra("image","https://developerobaida.com/jamat/news_details/Images/273452639_1698425823.jpeg");
+                intent.putExtra("image","https://developerobaida.com/post_bank/Background/1740200536_1705855731.webp");
                 intent.putExtra("font","readex_light.ttf");
                 intent.putExtra("size","18");
                 intent.putExtra("color","#ffffff");
                 intent.putExtra("dx","0.0");
                 intent.putExtra("dy","0.0");
                 intent.putExtra("radius","0.0");
-                intent.putExtra("shadowColor","#ffffff");
+                intent.putExtra("shadowColor","#00FFFFFF");
                 startActivity(intent);
-            }else {
-                Toast.makeText(getContext(),"No Internet",Toast.LENGTH_SHORT).show();
-            }
 
+            }else Toast.makeText(getContext(),"No Internet",Toast.LENGTH_SHORT).show();
 
         });
 
@@ -128,7 +130,7 @@ public class Home extends Fragment {
             } catch (JSONException e) {
                 throw new RuntimeException(e);
             }
-        }, error -> Toast.makeText(getContext(), "failed to load slider", Toast.LENGTH_SHORT).show());
+        }, error -> Log.d("CHECK","Failed to load"));
         RequestQueue requestQueue = Volley.newRequestQueue(getContext());
         requestQueue.add(jsonArrayRequest);
 
@@ -136,6 +138,15 @@ public class Home extends Fragment {
         //==================================================================================================================================
         //==================================================================================================================================
         return v;
+    }
+    void refreshing(){
+        FragmentManager manager = getActivity().getSupportFragmentManager();
+        FragmentTransaction transaction = manager.beginTransaction();
+        transaction.add(R.id.frameStatus,new RecentPostCategory());
+        transaction.add(R.id.frameVideo,new RecentWallpaperCategory());
+        transaction.add(R.id.frameProfilePic,new RecentProfilePicCategory());
+        transaction.commit();
+
     }
 
     private boolean isNetworkAvailable() {

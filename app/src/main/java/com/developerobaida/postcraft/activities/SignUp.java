@@ -4,12 +4,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -17,8 +14,6 @@ import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,25 +23,17 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-
-import java.io.ByteArrayOutputStream;
-
 public class SignUp extends AppCompatActivity {
 
     EditText input_name,input_email,input_password,input_number;
     Button buttonSignUp;
     ProgressBar progressBar;
-    TextView textSignIn;
+    TextView textSignIn,textPrivacy;
     private FirebaseAuth mAuth;
     User user;
     FirebaseUser firebaseUser;
     DatabaseReference usersRef;
     String email,password,name,number,imageUrl;
-    RadioGroup radioGroup;
-    RadioButton radioButton;
-    int gender;
 
     @Override
     public void onStart() {
@@ -74,7 +61,14 @@ public class SignUp extends AppCompatActivity {
         buttonSignUp = findViewById(R.id.buttonSignUp);
         progressBar = findViewById(R.id.progressbar);
         textSignIn = findViewById(R.id.textSignIn);
-        radioGroup = findViewById(R.id.radioGroup);
+        textPrivacy = findViewById(R.id.textPrivacy);
+
+        textPrivacy.setOnClickListener(v -> {
+            Intent intent = new Intent(this,WebView.class);
+            intent.putExtra("title","Privacy Policy");
+            intent.putExtra("link","");
+            startActivity(intent);
+        });
 
         progressBar.getIndeterminateDrawable().setTint(Color.parseColor("#FFFFFF"));
 
@@ -98,21 +92,14 @@ public class SignUp extends AppCompatActivity {
         password = input_password.getText().toString();
         name = input_name.getText().toString();
         number = input_number.getText().toString();
-        int id = radioGroup.getCheckedRadioButtonId();
-        if (id == -1) {
-            Toast.makeText(SignUp.this, "Please select gender", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        radioButton = findViewById(id);
-        gender = radioGroup.indexOfChild(radioButton);
+
+
         if (TextUtils.isEmpty(email) || TextUtils.isEmpty(name) || TextUtils.isEmpty(number) || TextUtils.isEmpty(password)) {
             Toast.makeText(SignUp.this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
             progressBar.setVisibility(View.GONE);
             buttonSignUp.setText("SIGN UP");
             return;
         }
-
-
 
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
@@ -138,7 +125,6 @@ public class SignUp extends AppCompatActivity {
                         progressBar.setVisibility(View.GONE);
                         buttonSignUp.setText("SIGN UP");
                         Toast.makeText(SignUp.this, "This Email is invalid \nor already used", Toast.LENGTH_SHORT).show();
-
                     }
                 });
     }

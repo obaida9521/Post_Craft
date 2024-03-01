@@ -1,23 +1,20 @@
 package com.developerobaida.postcraft.fragments;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import androidx.appcompat.widget.SearchView;
-import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
-import android.widget.TextView;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -25,6 +22,7 @@ import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.Volley;
 import com.developerobaida.postcraft.R;
 import com.developerobaida.postcraft.adapters.AdapterAllPost;
+import com.developerobaida.postcraft.database.DatabaseHelper;
 import com.developerobaida.postcraft.model.ItemAllPost;
 import com.facebook.shimmer.ShimmerFrameLayout;
 
@@ -33,7 +31,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-public class AllPost extends Fragment {
+public class AllPost extends Fragment implements AdapterAllPost.PostFavClickListener{
     RecyclerView recPost;
     SearchView search;
     AdapterAllPost adapterAllPost;
@@ -41,6 +39,9 @@ public class AllPost extends Fragment {
     Spinner spinner;
     ShimmerFrameLayout effect;
     JsonArrayRequest jsonArrayRequest;
+    SwipeRefreshLayout swiperefresh;
+    RelativeLayout retryLay;
+    DatabaseHelper database;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
         View v =  inflater.inflate(R.layout.fragment_all_post, container, false);
@@ -51,12 +52,20 @@ public class AllPost extends Fragment {
         search = v.findViewById(R.id.search);
         spinner = v.findViewById(R.id.spinner);
         effect = v.findViewById(R.id.effect);
+        retryLay = v.findViewById(R.id.retryLay);
+        swiperefresh = v.findViewById(R.id.swiperefresh);
+        database = new DatabaseHelper(getContext());
         getData();
+        swiperefresh.setOnRefreshListener(() -> {
+            arrayList = new ArrayList<>();
+            getData();
+            if (swiperefresh.isRefreshing()) swiperefresh.setRefreshing(false);
+        });
 
 
         //-----------------------------------------------------------------------------
         //-----------------------------------------------------------------------------
-        ArrayAdapter<CharSequence> spinnerAdapter = ArrayAdapter.createFromResource(requireContext(), R.array.categories_array, android.R.layout.simple_spinner_item);
+        ArrayAdapter<CharSequence> spinnerAdapter = ArrayAdapter.createFromResource(requireContext(), R.array.post_category, android.R.layout.simple_spinner_item);
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(spinnerAdapter);
 
@@ -92,8 +101,6 @@ public class AllPost extends Fragment {
         //-----------------------------------------------------------------------------
         //-----------------------------------------------------------------------------
 
-
-
         return v;
     }
     //=====================================================================-------------------------------
@@ -118,6 +125,7 @@ public class AllPost extends Fragment {
             try {
                 for (int i=0; i<response.length();i++){
                     JSONObject jsonObject = response.getJSONObject(i);
+                    String id = jsonObject.getString("id");
                     String status = jsonObject.getString("status");
                     String image = jsonObject.getString("image");
                     String font = jsonObject.getString("font");
@@ -128,10 +136,11 @@ public class AllPost extends Fragment {
                     String dx = jsonObject.getString("h_shadow");
                     String radius = jsonObject.getString("r_shadow");
                     String shadowColor = jsonObject.getString("c_shadow");
+                    String type = jsonObject.getString("type");
 
-                    arrayList.add(new ItemAllPost(""+status,""+image,""+font,""+color,""+size,""+category,""+dy,""+dx,""+radius,""+shadowColor));
+                    arrayList.add(new ItemAllPost(""+status,""+image,""+font,""+color,""+size,""+category,""+dy,""+dx,""+radius,""+shadowColor,""+id,""+type));
                 }
-                adapterAllPost = new AdapterAllPost(arrayList,getContext());
+                adapterAllPost = new AdapterAllPost(arrayList,getContext(),this);
                 recPost.setLayoutManager(new LinearLayoutManager(getContext()));
                 recPost.setAdapter(adapterAllPost);
                 adapterAllPost.notifyDataSetChanged();
@@ -141,51 +150,34 @@ public class AllPost extends Fragment {
             }
         }, error -> {
             effect.setVisibility(View.GONE);
-            noInternet(getActivity());
+            reload(getActivity());
         });
         RequestQueue requestQueue = Volley.newRequestQueue(getContext());
         requestQueue.add(jsonArrayRequest);
     }
-    private void noInternet(Activity activity){
+    private void reload(Activity activity){
+        retryLay.setVisibility(View.VISIBLE);
+        retryLay.setOnClickListener(v -> {
+            effect.setVisibility(View.VISIBLE);
 
-        View dialogView = getLayoutInflater().inflate(R.layout.dialogue_ui, null);
-
-        TextView title = dialogView.findViewById(R.id.title);
-        TextView message = dialogView.findViewById(R.id.message);
-        CardView positive = dialogView.findViewById(R.id.positive);
-        CardView negative = dialogView.findViewById(R.id.negative);
-        ImageView icon = dialogView.findViewById(R.id.icon);
-        TextView positiveTxt = dialogView.findViewById(R.id.positiveTxt);
-        TextView negativeTxt = dialogView.findViewById(R.id.negativeTxt);
-
-        title.setText("Connection Problem!");
-        message.setText("Check your Internet connection \nTry again");
-        icon.setImageResource(R.drawable.wifi_off_24);
-        positiveTxt.setText("Back");
-        negativeTxt.setText("Reload");
-
-        AlertDialog alertDialog = new AlertDialog.Builder(activity, R.style.AlertDialogTheme)
-                .setView(dialogView)
-                .create();
-
-        positive.setOnClickListener(v -> {
-            alertDialog.dismiss();
-            if (!activity.isFinishing()) getActivity().onBackPressed();
-        });
-
-        negative.setOnClickListener(v -> {
-            alertDialog.dismiss();
             if (!activity.isFinishing()) {
+                retryLay.setVisibility(View.GONE);
                 effect.setVisibility(View.VISIBLE);
                 RequestQueue requestQueue = Volley.newRequestQueue(getContext());
                 requestQueue.add(jsonArrayRequest);
             }
         });
+    }
 
-        if (!activity.isFinishing()) {
-            alertDialog.setCancelable(false);
-            alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-            alertDialog.show();
+    @Override
+    public void postFavClick(int position, boolean isFav) {
+        if (position >= 0 && position < arrayList.size()) {
+            ItemAllPost clickedItem = arrayList.get(position);
+            if (isFav) database.addPost_fav(""+clickedItem.getStatus(),""+clickedItem.getType(),""+clickedItem.getImage(), ""+clickedItem.getFont(),
+                        ""+clickedItem.getColor(),""+clickedItem.getSize(),""+clickedItem.getDy(),""+clickedItem.getDx(),""+clickedItem.getRadius(),
+                        ""+clickedItem.getShadowColor(),""+clickedItem.getId());
+            else database.deletePost_fav(Integer.parseInt(clickedItem.getId()));
+
         }
     }
 }

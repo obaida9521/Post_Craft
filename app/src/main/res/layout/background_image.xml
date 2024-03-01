@@ -20,7 +20,7 @@
             android:layout_height="80dp"
             android:id="@+id/image"
             android:scaleType="centerCrop"
-            android:src="@drawable/font_ic"
+            android:src="@drawable/material_design_default"
             />
     </androidx.cardview.widget.CardView>
 
